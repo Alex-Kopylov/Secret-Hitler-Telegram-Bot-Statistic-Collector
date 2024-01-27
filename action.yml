@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted]
     steps:
       - name: executing remote ssh commands using password
         uses: appleboy/ssh-action@master
@@ -24,7 +24,7 @@ jobs:
             docker-compose build --no-cache
 
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted]
     steps:
       - name: SSH into production server and deploy
         uses: appleboy/ssh-action@master
