@@ -16,7 +16,6 @@ jobs:
         uses: actions/checkout@v4
       - name: executing remote ssh commands using password
         uses: appleboy/ssh-action@master
-        working-directory: ${{ github.workspace }}
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
@@ -24,7 +23,8 @@ jobs:
           key: ${{ secrets.PRIVATE_KEY }}
           #          port: ${{ secrets.PORT }}
           script: |
-            echo "${{ github.workspace }}"
+            echo "${{ env.REPO_NAME }}"
+            cd ./_work/${{ env.REPO_NAME  }}/${{ env.REPO_NAME  }}
             pwd
             ls
             docker compose build --no-cache
