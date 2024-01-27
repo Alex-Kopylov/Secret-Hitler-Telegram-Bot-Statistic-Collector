@@ -14,7 +14,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        path: ./REPO_NAME
+        with:
+          path: ./REPO_NAME
       - name: executing remote ssh commands using password
         uses: appleboy/ssh-action@master
         with:
