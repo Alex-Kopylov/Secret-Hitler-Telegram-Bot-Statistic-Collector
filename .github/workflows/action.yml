@@ -19,9 +19,9 @@ jobs:
           #          port: ${{ secrets.PORT }}
           script: |
             cd $PATH_TO_APP
-            docker-compose pull
-            docker-compose down
-            docker-compose build --no-cache
+            docker compose pull
+            docker compose down
+            docker compose build --no-cache
 
   deploy:
     runs-on: [self-hosted]
@@ -36,6 +36,6 @@ jobs:
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
             cd $PATH_TO_APP
-            docker-compose pull
-            docker-compose down
-            docker-compose up -d
+            docker compose pull
+            docker compose down
+            docker compose up -d
