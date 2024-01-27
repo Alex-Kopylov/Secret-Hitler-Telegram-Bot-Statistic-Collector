@@ -1,4 +1,5 @@
-![board game logo](https://upload.wikimedia.org/wikipedia/en/thumb/8/89/Secret_Hitler.svg/2560px-Secret_Hitler.svg.png)
+
+<img alt="board game logo" src="https://upload.wikimedia.org/wikipedia/en/thumb/8/89/Secret_Hitler.svg/2560px-Secret_Hitler.svg.png" width="300"/>
 
 
 
