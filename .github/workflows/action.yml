@@ -21,10 +21,7 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
-            echo "${{ env.REPO_NAME }}"
             cd ./_work/${{ env.REPO_NAME  }}/${{ env.REPO_NAME  }}
-            pwd
-            ls
             docker compose build --no-cache
 
   deploy:
@@ -39,8 +36,5 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
-            echo "${{ env.REPO_NAME }}"
             cd ./_work/${{ env.REPO_NAME  }}/${{ env.REPO_NAME  }}
-            pwd
-            ls
             docker compose up -d
