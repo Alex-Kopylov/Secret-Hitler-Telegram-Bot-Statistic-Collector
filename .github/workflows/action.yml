@@ -18,9 +18,6 @@ jobs:
           key: ${{ secrets.PRIVATE_KEY }}
           #          port: ${{ secrets.PORT }}
           script: |
-            cd $PATH_TO_APP
-            docker compose pull
-            docker compose down
             docker compose build --no-cache
 
   deploy:
@@ -36,5 +33,4 @@ jobs:
 #          port: ${{ secrets.PORT }}
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
-            cd $PATH_TO_APP
             docker compose up -d
