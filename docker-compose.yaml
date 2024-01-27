@@ -6,7 +6,7 @@ services:
     stdin_open: true
     tty: true
     volumes:
-      - ./database/:/root/db
+      - sqlite_data:/root/db
     command: -init init.sql db.sqlite
     container_name: sqlite3_db
     restart: unless-stopped
@@ -23,9 +23,13 @@ services:
       - TZ=UTC
       - ENABLE_UWSGI=true
     volumes:
-      - ./database/:/database
+      - sqlite_data:/database
     container_name: sqlitebrowser
 
 volumes:
   sqlite_data:
-#    external: true
+    driver: local
+    driver_opts:
+      type: none
+      device: $PWD/database
+      o: bind
