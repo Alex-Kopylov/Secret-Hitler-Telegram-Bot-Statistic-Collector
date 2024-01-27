@@ -14,8 +14,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          path: ./REPO_NAME
       - name: executing remote ssh commands using password
         uses: appleboy/ssh-action@master
         with:
@@ -25,7 +23,9 @@ jobs:
           key: ${{ secrets.PRIVATE_KEY }}
           #          port: ${{ secrets.PORT }}
           script: |
-            cd $REPO_NAME
+            cd $REPO_NAME\$REPO_NAME
+            pwd
+            ls
             docker compose build --no-cache
 
   deploy:
