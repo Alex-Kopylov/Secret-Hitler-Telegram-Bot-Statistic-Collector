@@ -18,6 +18,8 @@ jobs:
           key: ${{ secrets.PRIVATE_KEY }}
           #          port: ${{ secrets.PORT }}
           script: |
+            pwd
+            ls
             docker compose build --no-cache
 
   deploy:
