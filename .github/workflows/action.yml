@@ -10,7 +10,6 @@ on:
 jobs:
   build:
     runs-on: [self-hosted]
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -21,7 +20,6 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           key: ${{ secrets.PRIVATE_KEY }}
-          #          port: ${{ secrets.PORT }}
           script: |
             echo "${{ env.REPO_NAME }}"
             cd ./_work/${{ env.REPO_NAME  }}/${{ env.REPO_NAME  }}
@@ -39,7 +37,10 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
-#          port: ${{ secrets.PORT }}
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
+            echo "${{ env.REPO_NAME }}"
+            cd ./_work/${{ env.REPO_NAME  }}/${{ env.REPO_NAME  }}
+            pwd
+            ls
             docker compose up -d
