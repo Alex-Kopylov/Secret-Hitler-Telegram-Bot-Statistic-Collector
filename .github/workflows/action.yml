@@ -17,14 +17,13 @@ jobs:
       - name: executing remote ssh commands using password
         uses: appleboy/ssh-action@master
         with:
+          path: ${{ github.workspace }}
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           key: ${{ secrets.PRIVATE_KEY }}
           #          port: ${{ secrets.PORT }}
           script: |
-            echo "$vars.GITHUB_WORKSPACE"
-            cd ${{ vars.GITHUB_WORKSPACE }}
             pwd
             ls
             docker compose build --no-cache
