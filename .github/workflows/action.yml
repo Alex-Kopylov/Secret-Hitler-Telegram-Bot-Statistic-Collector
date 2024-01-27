@@ -23,7 +23,8 @@ jobs:
           key: ${{ secrets.PRIVATE_KEY }}
           #          port: ${{ secrets.PORT }}
           script: |
-            cd $REPO_NAME\$REPO_NAME
+            echo "$GITHUB_WORKSPACE"
+            cd ${{ GITHUB_WORKSPACE }}
             pwd
             ls
             docker compose build --no-cache
