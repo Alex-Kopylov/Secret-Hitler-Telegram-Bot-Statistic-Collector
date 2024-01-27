@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+  sqlite3_db:
+    image: nouchka/sqlite3:latest
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./database/:/root/db
+    command: -init init.sql db.sqlite
+    container_name: sqlite3_db
+    restart: unless-stopped
+
+  sqlitebrowser:
+    image: linuxserver/sqlitebrowser
+    ports:
+      - "3000:3000"
+    depends_on:
+      - sqlite3_db
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=UTC
+      - ENABLE_UWSGI=true
+    volumes:
+      - ./database/:/database
+    container_name: sqlitebrowser
+
+volumes:
+  sqlite_data:
+#    external: true
