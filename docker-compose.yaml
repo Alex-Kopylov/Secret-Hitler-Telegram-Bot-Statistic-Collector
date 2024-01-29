@@ -8,7 +8,6 @@ services:
     volumes:
       - sqlite_data:/root/db
     command: -init init.sql db.sqlite
-    container_name: sqlite3_db
     restart: unless-stopped
 
   sqlitebrowser:
@@ -24,7 +23,6 @@ services:
       - ENABLE_UWSGI=true
     volumes:
       - sqlite_data:/database
-    container_name: sqlitebrowser
 
 volumes:
   sqlite_data:
