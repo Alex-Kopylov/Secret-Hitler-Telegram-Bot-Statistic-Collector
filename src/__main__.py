@@ -4,92 +4,49 @@ Telegram bot entry point.
 """
 
 import logging
+from typing import Type
 
-from src.callbacks.receive_poll_answer import receive_poll_answer
-from src.db import close_db
-from src import config
-from src import handlers
 from telegram import (
-    KeyboardButton,
-    KeyboardButtonPollType,
-    Poll,
-    ReplyKeyboardMarkup,
-    ReplyKeyboardRemove,
     Update,
 )
-
-from telegram.constants import ParseMode
-
 from telegram.ext import (
     Application,
     CommandHandler,
-    ContextTypes,
-    MessageHandler,
     PollAnswerHandler,
-    PollHandler,
-    filters,
-    CallbackQueryHandler,
-    ConversationHandler,
 )
+from telegram.ext import BaseHandler
 
-COMMAND_HANDLERS = {
-    "start": handlers.start,
-    "help": handlers.help,
-}
-CALLBACK_QUERY_HANDLERS = {
-    # "button": handlers.button,
-}
-CONVERSATION_HANDLERS = {
-    "game": handlers.game,
-    "save": handlers.save,
-}
+from src import config
+from src import handlers
+from src.callbacks.receive_poll_answer import receive_poll_answer
+from src.db import close_db
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
 )
 logger = logging.getLogger(__name__)
 
-if not config.TELEGRAM_BOT_TOKEN:
-    raise ValueError(
-        "TELEGRAM_BOT_TOKEN env variable" "wasn't implemented in .env file."
-    )
 
+def get_handlers() -> list:
+    commands = [
+        CommandHandler("start", handlers.start),
+        CommandHandler("help", handlers.help),
+        CommandHandler("game", handlers.game),
+        CommandHandler("save", handlers.save),
+    ]
+    poll_answer_handler = [
+        PollAnswerHandler(receive_poll_answer),
+    ]
 
-# async def receive_poll(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-#     """On receiving polls, reply to it by a closed poll copying the received poll"""
-#
-#     actual_poll = update.effective_message.poll
-#
-#     # Only need to set the question and options, since all other parameters don't matter for
-#
-#     # a closed poll
-#
-#     await update.effective_message.reply_poll(
-#         question=actual_poll.question,
-#         options=[o.text for o in actual_poll.options],
-#         # with is_closed true, the poll/quiz is immediately closed
-#         is_closed=True,
-#         reply_markup=ReplyKeyboardRemove(),
-#     )
+    return commands + poll_answer_handler
 
 
 def main() -> None:
-    application = Application.builder().token(config.TELEGRAM_BOT_TOKEN).build()
-    for command_name, command_handler in COMMAND_HANDLERS.items():
-        application.add_handler(CommandHandler(command_name, command_handler))
-    for conversation_name, conversation_handler in CONVERSATION_HANDLERS.items():
-        application.add_handler(
-            ConversationHandler(
-                entry_points=[CommandHandler(conversation_name, conversation_handler)],
-                states={},
-                fallbacks=[],
-            )
-        )
-    for callback_query_name, callback_query_handler in CALLBACK_QUERY_HANDLERS.items():
-        application.add_handler(CallbackQueryHandler(callback_query_handler))
+    if not config.TELEGRAM_BOT_TOKEN:
+        raise ValueError("TELEGRAM_BOT_TOKEN env variable" "wasn't porpoused.")
 
-    # application.add_handler(MessageHandler(filters.POLL, receive_poll))
-    application.add_handler(PollAnswerHandler(receive_poll_answer))
+    application = Application.builder().token(config.TELEGRAM_BOT_TOKEN).build()
+    application.add_handlers(get_handlers())
 
     application.run_polling(allowed_updates=Update.ALL_TYPES)
 

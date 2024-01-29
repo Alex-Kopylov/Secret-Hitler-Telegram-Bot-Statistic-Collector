@@ -9,7 +9,7 @@ load_dotenv()
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 
 # Database constants
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path().resolve()
 SQLITE_DB_FILE = BASE_DIR / "database/db.sqlite"
 DATE_FORMAT = "%d.%m.%Y %H:%M:%S"
 

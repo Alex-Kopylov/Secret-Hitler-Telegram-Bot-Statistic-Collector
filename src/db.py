@@ -8,7 +8,10 @@ from src import config
 
 
 async def get_db() -> aiosqlite.Connection:
-    get_db.db = getattr(get_db, "db", None) or await aiosqlite.connect(config.SQLITE_DB_FILE)
+    if not getattr(get_db, "db", None):
+        db = await aiosqlite.connect(config.SQLITE_DB_FILE)
+        get_db.db = db
+
     return get_db.db
 
 
