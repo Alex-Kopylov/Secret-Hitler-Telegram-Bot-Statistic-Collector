@@ -1,61 +1,49 @@
 -- Create table for players
 CREATE TABLE IF NOT EXISTS players (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    telegram_user_id INTEGER,
-    username TEXT NOT NULL,
-    first_name TEXT,
-    last_name TEXT
+    id INTEGER PRIMARY KEY NOT NULL UNIQUE, -- Telegram user id
+    username TEXT NOT NULL, -- Telegram username
+    first_name TEXT, -- Telegram first name
+    last_name TEXT -- Telegram last name
 );
 
 -- Create table for playrooms
 CREATE TABLE IF NOT EXISTS playrooms (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    telegram_chat_id INTEGER,
+    id INTEGER PRIMARY KEY NOT NULL UNIQUE, -- Telegram chat id
     name TEXT NOT NULL
 );
 
 -- Create junction table for players and playrooms
 CREATE TABLE IF NOT EXISTS players_and_playrooms (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    player_id INTEGER,
-    playroom_id INTEGER,
-    date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE,
+    player_id INTEGER NOT NULL UNIQUE, -- Telegram user id
+    playroom_id INTEGER NOT NULL UNIQUE, -- Telegram chat id
+    date DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
     FOREIGN KEY (player_id) REFERENCES players(id),
     FOREIGN KEY (playroom_id) REFERENCES playrooms(id)
 );
 
 -- Create table for games
 CREATE TABLE IF NOT EXISTS games (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    playroom_id INTEGER,
-    start_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+    id INTEGER PRIMARY KEY NOT NULL UNIQUE, -- Telegram poll id
+    playroom_id INTEGER, -- Telegram chat id
+    creator_id INTEGER NOT NULL, -- Telegram user id who created the game
+    start_time DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
     end_time DATETIME,
-    result TEXT,
+    result TEXT, -- ["Hitler Canceler", "Fascist Law", "Hitler Death", "Liberal Law"]
+    FOREIGN KEY (creator_id) REFERENCES players(id),
     FOREIGN KEY (playroom_id) REFERENCES playrooms(id)
 );
 
 -- Create table for records
 CREATE TABLE IF NOT EXISTS records (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    player_id INTEGER,
-    game_id INTEGER,
-    role TEXT,
-    won INTEGER, -- 0 or 1
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE,
+    creator_id INTEGER NOT NULL, -- Telegram user id who created the record
+    player_id INTEGER NOT NULL,
+    playroom_id INTEGER, -- Telegram chat id
+    game_id INTEGER NOT NULL, -- Telegram poll id
+    role TEXT NOT NULL, -- [HC, HD, HL, FL, LL, LW, FW] # TODO: to int category
     FOREIGN KEY (player_id) REFERENCES players(id),
-    FOREIGN KEY (game_id) REFERENCES games(id)
+    FOREIGN KEY (creator_id) REFERENCES players(id),
+    FOREIGN KEY (game_id) REFERENCES games(id),
+    FOREIGN KEY (playroom_id) REFERENCES playrooms(id)
 );
-
--- Create a trigger to update games table when the first record for a game ends
-CREATE TRIGGER IF NOT EXISTS update_game_end_time
-AFTER INSERT ON records
-FOR EACH ROW
-BEGIN
-    -- Update the end_time in the games table if it is the first record for the game
-    UPDATE games
-    SET end_time = CASE
-                    WHEN (SELECT COUNT(*) FROM records WHERE game_id = NEW.game_id) = 1
-                    THEN CURRENT_TIMESTAMP
-                    ELSE end_time
-                  END
-    WHERE id = NEW.game_id;
-END;
