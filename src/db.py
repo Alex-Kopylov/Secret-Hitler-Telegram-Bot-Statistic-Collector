@@ -8,10 +8,7 @@ from src import config
 
 
 async def get_db() -> aiosqlite.Connection:
-    if not getattr(get_db, "db", None):
-        db = await aiosqlite.connect(config.SQLITE_DB_FILE)
-        get_db.db = db
-
+    get_db.db = getattr(get_db, "db", None) or await aiosqlite.connect(config.SQLITE_DB_FILE)
     return get_db.db
 
 
@@ -20,9 +17,7 @@ async def fetch_all(
 ) -> list[dict]:
     cursor = await _get_cursor(sql, params)
     rows = await cursor.fetchall()
-    results = []
-    for row_ in rows:
-        results.append(_get_result_with_column_names(cursor, row_))
+    results = [_get_result_with_column_names(cursor, row) for row in rows]
     await cursor.close()
     return results
 
@@ -31,21 +26,17 @@ async def fetch_one(
     sql: LiteralString, params: Iterable[Any] | None = None
 ) -> dict | None:
     cursor = await _get_cursor(sql, params)
-    row_ = await cursor.fetchone()
-    if not row_:
-        await cursor.close()
-        return None
-    row = _get_result_with_column_names(cursor, row_)
+    row = await cursor.fetchone()
+    result = _get_result_with_column_names(cursor, row) if row else None
     await cursor.close()
-    return row
+    return result
 
 
 async def execute(
     sql: LiteralString, params: Iterable[Any] | None = None, *, autocommit: bool = True
 ) -> None:
     db = await get_db()
-    args: tuple[LiteralString, Iterable[Any] | None] = (sql, params)
-    await db.execute(*args)
+    await db.execute(sql, params)
     if autocommit:
         await db.commit()
 
@@ -62,9 +53,8 @@ async def _get_cursor(
     sql: LiteralString, params: Iterable[Any] | None
 ) -> aiosqlite.Cursor:
     db = await get_db()
-    args: tuple[LiteralString, Iterable[Any] | None] = (sql, params)
     db.row_factory = aiosqlite.Row
-    cursor = await db.execute(*args)
+    cursor = await db.execute(sql, params)
     return cursor
 
 
