@@ -34,13 +34,14 @@ async def game(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             "chat_id": update.effective_chat.id,
             "chat_name": update.effective_chat.title,
             "creator_id": update.effective_user.id,
+            "results": {},
         }
     }
 
     context.bot_data.update(game_metadata)
 
 
-async def save(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def save(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None: # TODO move to separate file
     """Saves a game
     Replying /save to the poll message (created by the bot) stops the poll
     It can only be done by the creator of the poll
@@ -85,11 +86,10 @@ async def save(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             f"You can only save game in a group chat where other players can see the results."
         )
 
-    poll_results = await context.bot.stop_poll(
+    await context.bot.stop_poll(
         update.effective_chat.id, msg_with_poll.id
     )
-
-    context.bot_data[update.poll.id]["results"] = poll_results
+    poll_results = context.bot_data[msg_with_poll.poll.id]["results"]
     await update.effective_message.reply_text(
         "Poll stopped. Results: {}".format(poll_results)
     )
