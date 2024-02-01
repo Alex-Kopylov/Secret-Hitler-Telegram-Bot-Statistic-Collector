@@ -1,11 +1,13 @@
+import asyncio
+
 from telegram import Update
 from telegram.ext import ContextTypes
 
 from src.utils import message_is_poll, is_message_from_group_chat
-
+from src import db
 
 async def _pass_checks(
-    msg_with_poll, update, context
+        msg_with_poll, update, context
 ) -> bool:  # TODO async checks and move somewhere else
     # check reply msg exists
     if not msg_with_poll:
@@ -33,8 +35,8 @@ async def _pass_checks(
         return False
     # check user is creator of the poll
     if (
-        update.effective_user.id
-        != context.bot_data[msg_with_poll.poll.id]["creator_id"]
+            update.effective_user.id
+            != context.bot_data[msg_with_poll.poll.id]["creator_id"]
     ):
         await update.effective_message.reply_text(
             f"You are not the creator of the game! "
@@ -63,10 +65,26 @@ async def save(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     )  # get a poll from reply message
     if await _pass_checks(msg_with_poll, update, context):
         await context.bot.stop_poll(update.effective_chat.id, msg_with_poll.id)
-        poll_results = context.bot_data[msg_with_poll.poll.id]["results"]
+
+        poll_data = context.bot_data[msg_with_poll.poll.id]
         await update.effective_message.reply_text(
-            "Poll stopped. Results: {}".format(poll_results)
+            "Poll stopped. Results: {}".format(poll_data["results"])
         )
+
+        print(poll_data["results"])
+
+        coroutines_list = []
+
+        for player_id, result in poll_data["results"].items():
+            coroutines_list.append(
+                db.execute("""
+                        INSERT INTO records (creator_id, player_id, playroom_id, game_id, role)
+                        VALUES (?, ?, ?, ?, ?)
+                        """, (poll_data['creator_id'], player_id, poll_data['chat_id'], poll_data['message_id'], result))
+            )
+
+        await asyncio.gather(*coroutines_list)
+
     else:
         await update.effective_message.reply_text(
             "Something went wrong. Can't process your request."
