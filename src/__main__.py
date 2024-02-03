@@ -19,7 +19,7 @@ from telegram.ext import BaseHandler
 from src import config
 from src import handlers
 from src.callbacks.receive_poll_answer import receive_poll_answer
-from src.db import close_db
+from src.db import close_db, get_db
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
