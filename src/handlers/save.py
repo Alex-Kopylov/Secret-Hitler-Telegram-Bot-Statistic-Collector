@@ -74,8 +74,6 @@ async def save(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             "Poll stopped. Results: {}".format(poll_data["results"])
         )
 
-        print(poll_data["results"])
-
         await asyncio.gather(
             *[
                 save_record(
