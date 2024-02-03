@@ -1,20 +1,31 @@
+from enum import Enum
 from typing import Literal
-
+from src import config
 from pydantic import BaseModel, field_validator
 
 
 class Record(BaseModel):
+    creator_id: int
     player_id: int
+    playroom_id: int
     game_id: int
-    role: Literal["Hitler", "Fascist", "Liberal"]
-    won: bool
-
-    @field_validator("won", mode="after")
-    @classmethod
-    def convert_bool_to_int(cls, v: bool) -> int:
-        return int(v)
+    role: config.GAME_POLL_OUTCOMES
 
     @field_validator("role", mode="after")
     @classmethod
-    def shorten_role(cls, v: str) -> str:
-        return v[0]
+    def shorten_role(cls, v: str) -> Literal["CH", "DH", "HL", "LW", "LL", "FW", "FL"]:
+        match v:
+            case "I'm Canceler Hitler":
+                return "CH"
+            case "I'm Dead Hitler":
+                return "DH"
+            case "I'm Liberal Winner":
+                return "LW"
+            case "I'm Hitler Loser":
+                return "HL"
+            case "I'm Liberal Loser":
+                return "LL"
+            case "I'm Fascistic Winner":
+                return "FW"
+            case "I'm Fascistic Loser":
+                return "FL"

@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from typing import Literal
 
 from dotenv import load_dotenv
 
@@ -21,3 +22,13 @@ MAX_LIBERAL_VOTERS = 6
 MIN_LIBERAL_VOTERS = 3
 MAX_FASCIST_VOTERS = 3
 MIN_FASCIST_VOTERS = 1
+
+GAME_POLL_OUTCOMES = Literal[
+    "I'm Canceler Hitler",
+    "I'm Dead Hitler",
+    "I'm Hitler Loser",
+    "I'm Liberal Winner",
+    "I'm Liberal Loser",
+    "I'm Fascistic Winner",
+    "I'm Fascistic Loser",
+]
