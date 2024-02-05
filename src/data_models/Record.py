@@ -9,7 +9,7 @@ class Record(BaseModel):
     player_id: int
     playroom_id: int
     game_id: int
-    role: config.GAME_POLL_OUTCOMES
+    role: str
 
     @field_validator("role", mode="after")
     @classmethod
@@ -29,3 +29,5 @@ class Record(BaseModel):
                 return "FW"
             case "I'm Fascistic Loser":
                 return "FL"
+            case _:
+                raise ValueError(f"Invalid role '{v}' for Record. Role must be one of {config.GAME_POLL_OUTCOMES}")
