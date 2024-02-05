@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from typing import Literal
+from typing import Literal, List, Tuple
 
 from dotenv import load_dotenv
 
@@ -8,10 +8,10 @@ load_dotenv()
 
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+DEVELOPER_CHAT_ID = os.getenv("DEVELOPER_CHAT_ID", "")
 
 # Database constants
-BASE_DIR = Path().resolve()
-SQLITE_DB_FILE = BASE_DIR / "database/db.sqlite"
+SQLITE_DB_FILE = os.getenv("SQLITE_DB_FILE", Path().resolve() / "database/db.sqlite")
 DATE_FORMAT = "%d.%m.%Y %H:%M:%S"
 
 # Game constants
@@ -23,7 +23,7 @@ MIN_LIBERAL_VOTERS = 3
 MAX_FASCIST_VOTERS = 3
 MIN_FASCIST_VOTERS = 1
 
-GAME_POLL_OUTCOMES = Literal[
+GAME_POLL_OUTCOMES: Tuple = (
     "I'm Canceler Hitler",
     "I'm Dead Hitler",
     "I'm Hitler Loser",
@@ -31,4 +31,4 @@ GAME_POLL_OUTCOMES = Literal[
     "I'm Liberal Loser",
     "I'm Fascistic Winner",
     "I'm Fascistic Loser",
-]
+)
