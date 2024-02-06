@@ -42,8 +42,6 @@ jobs:
           script: |
             cd ./_work/${{ env.REPO_NAME  }}/${{ env.REPO_NAME  }}
             docker compose down
-            docker compose up -d \
-              -e TELEGRAM_BOT_TOKEN=${{ secrets.DEV_TELEGRAM_BOT_TOKEN }} \
-              -e DEVELOPER_CHAT_ID=${{ secrets.DEVELOPER_CHAT_ID }}
+            docker compose up -d
             docker compose ps
           envs: TELEGRAM_BOT_TOKEN,DEVELOPER_CHAT_ID,SQLITE_DB_FILE_PATH
