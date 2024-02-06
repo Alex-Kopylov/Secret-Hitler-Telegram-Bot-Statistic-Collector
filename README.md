@@ -38,7 +38,7 @@ To host your own instance of the bot, follow these steps:
 ```dotenv
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token
 DEVELOPER_CHAT_ID=your_chat_id_for_getting_logs_and_errors# optional
-SQLITE_DB_FILE_PATH=database/db.sqlite# or any other path that you prefer
+SQLITE_DB_FILE_PATH=db.sqlite# or any other path that you prefer
 ```
 
 Please note that you need to create a new bot using the [BotFather](https://t.me/BotFather) and get the token for

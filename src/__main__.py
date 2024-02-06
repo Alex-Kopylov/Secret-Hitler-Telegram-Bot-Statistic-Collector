@@ -17,11 +17,6 @@ from src import handlers
 from src.db import close_db
 from src.get_handlers import get_handlers
 
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
-)
-logger = logging.getLogger()
-
 
 def main() -> None:
     if not config.TELEGRAM_BOT_TOKEN:
@@ -38,6 +33,10 @@ if __name__ == "__main__":
     try:
         main()
     except Exception:
+        logging.basicConfig(
+            format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+        )
+        logger = logging.getLogger()
         logger.warning(traceback.format_exc())
     finally:
         close_db()
