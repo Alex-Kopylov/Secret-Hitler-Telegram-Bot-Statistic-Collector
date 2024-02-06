@@ -9,13 +9,12 @@ services:
       - DEVELOPER_CHAT_ID=${DEVELOPER_CHAT_ID}
     volumes:
       - sqlite_data:/database
-#    command: ["python", "-m", "sqlite3", "${SQLITE_DB_FILE_PATH}", "<", "database/init.sql"]
+    entrypoint: ["/bin/sh", "-c"]
     command:
-        - sh
-        - -c
-        - python -m sqlite3 ${SQLITE_DB_FILE_PATH} < database/init.sql
-        - python -m src/__main__.py
-    restart: always
+        - |
+          python -m sqlite3 &{SQLITE_DB_FILE_PATH} < src/sql/init.sql &&
+          python src/__main__.py
+#    restart: always
 
   sqlitebrowser:
     image: linuxserver/sqlitebrowser

@@ -47,3 +47,5 @@ CREATE TABLE IF NOT EXISTS records (
     FOREIGN KEY (game_id) REFERENCES games(id),
     FOREIGN KEY (playroom_id) REFERENCES playrooms(id)
 );
+
+.quit
