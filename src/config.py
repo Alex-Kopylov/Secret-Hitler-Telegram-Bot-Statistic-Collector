@@ -11,7 +11,9 @@ TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", None)
 DEVELOPER_CHAT_ID = os.getenv("DEVELOPER_CHAT_ID", None)
 
 # Database constants
-SQLITE_DB_FILE = os.getenv("SQLITE_DB_FILE", Path().resolve() / "database/db.sqlite")
+SQLITE_DB_FILE_PATH = os.getenv(
+    "SQLITE_DB_FILE_PATH", Path().resolve() / "database/db.sqlite"
+)
 DATE_FORMAT = "%d.%m.%Y %H:%M:%S"
 
 # Game constants
