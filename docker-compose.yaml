@@ -4,13 +4,16 @@ services:
   bot:
     build: .
     environment:
-      - SQLITE_DB_FILE=/database/db.sqlite
-#      - PYTHONPATH=/bot
+      - SQLITE_DB_FILE_PATH=${SQLITE_DB_FILE_PATH}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - DEVELOPER_CHAT_ID=${DEVELOPER_CHAT_ID}
     volumes:
       - sqlite_data:/database
+    entrypoint: ["/bin/sh", "-c"]
     command:
-      - python -m sqlite3 ${SQLITE_DB_FILE} < database/init.sql
-    entrypoint: python src/__main__.py
+        - |
+          python -m sqlite3 ${SQLITE_DB_FILE_PATH} < src/sql/init.sql
+          python src/__main__.py
     restart: always
 
   sqlitebrowser:
@@ -20,12 +23,13 @@ services:
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=UTC
+      - TZ=GMT+4
       - ENABLE_UWSGI=true
     volumes:
       - sqlite_data:/database
     profiles:
       - sqlitebrowser
+    restart: unless-stopped
 
 volumes:
   sqlite_data:

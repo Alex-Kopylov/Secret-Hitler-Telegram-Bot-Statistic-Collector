@@ -30,4 +30,6 @@ class Record(BaseModel):
             case "I'm Fascistic Loser":
                 return "FL"
             case _:
-                raise ValueError(f"Invalid role '{v}' for Record. Role must be one of {config.GAME_POLL_OUTCOMES}")
+                raise ValueError(
+                    f"Invalid role '{v}' for Record. Role must be one of {config.GAME_POLL_OUTCOMES}"
+                )
