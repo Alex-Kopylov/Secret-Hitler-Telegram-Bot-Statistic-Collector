@@ -46,4 +46,4 @@ ENV PYTHONPATH=$PYTHONPATH \
 WORKDIR $PYTHONPATH
 COPY . .
 
-#CMD ["python", "src/__main__.py"]
+CMD ["python", "src/__main__.py"]
