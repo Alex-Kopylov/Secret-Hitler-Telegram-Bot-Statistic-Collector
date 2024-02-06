@@ -1,6 +1,10 @@
 import logging
 import sqlite3
 
+from src.data_models.Playroom import Playroom
+import logging
+import sqlite3
+
 from src.data_models.Game import Game
 from src.data_models.Player import Player
 from src.data_models.Playroom import Playroom
@@ -20,6 +24,17 @@ async def save_record(record: Record) -> None:
             record.role,
         ),
     )
+
+
+async def save_playroom(playroom: Playroom) -> None:
+    """Add a game room to the bot_data"""
+    try:
+        await execute(
+            "INSERT INTO playrooms (id, name) VALUES (?, ?)",
+            (playroom.telegram_chat_id, playroom.name),
+        )
+    except sqlite3.IntegrityError:
+        logging.info(f"Playroom {playroom.name} already exists in the database")
 
 
 async def save_playroom(playroom: Playroom) -> None:
