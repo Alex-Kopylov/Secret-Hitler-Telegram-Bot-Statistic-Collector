@@ -1,6 +1,8 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from src import config
+from src.data_models.Playroom import Playroom
+from src.services.db_service import save_playroom
 from src.utils import message_is_poll, is_message_from_group_chat
 
 
@@ -30,5 +32,9 @@ async def game(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             "results": {},
         }
     }
-
+    await save_playroom(
+        Playroom(
+            telegram_chat_id=update.effective_chat.id, name=update.effective_chat.title
+        )
+    )
     context.bot_data.update(game_metadata)

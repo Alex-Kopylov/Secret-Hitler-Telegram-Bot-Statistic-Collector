@@ -3,7 +3,10 @@ CREATE TABLE IF NOT EXISTS players (
     id INTEGER PRIMARY KEY NOT NULL UNIQUE, -- Telegram user id
     username TEXT NOT NULL, -- Telegram username
     first_name TEXT, -- Telegram first name
-    last_name TEXT -- Telegram last name
+    full_name TEXT, -- Telegram full name
+    last_name TEXT, -- Telegram last name
+    is_bot TEXT NOT NULL DEFAULT 'FALSE', -- Telegram is_bot
+    language_code TEXT -- Telegram language code
 );
 
 -- Create table for playrooms
@@ -27,8 +30,7 @@ CREATE TABLE IF NOT EXISTS games (
     id INTEGER PRIMARY KEY NOT NULL UNIQUE, -- Telegram poll id
     playroom_id INTEGER, -- Telegram chat id
     creator_id INTEGER NOT NULL, -- Telegram user id who created the game
-    start_time DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    end_time DATETIME,
+    time DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
     result TEXT, -- ["Hitler Canceler", "Fascist Law", "Hitler Death", "Liberal Law"]
     FOREIGN KEY (creator_id) REFERENCES players(id),
     FOREIGN KEY (playroom_id) REFERENCES playrooms(id)
@@ -47,3 +49,5 @@ CREATE TABLE IF NOT EXISTS records (
     FOREIGN KEY (game_id) REFERENCES games(id),
     FOREIGN KEY (playroom_id) REFERENCES playrooms(id)
 );
+
+.quit

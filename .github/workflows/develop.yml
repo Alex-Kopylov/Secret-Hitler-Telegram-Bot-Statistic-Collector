@@ -5,7 +5,7 @@ env:
 on:
   push:
     branches:
-      - main
+      - develop
 
 jobs:
   build:
@@ -30,6 +30,10 @@ jobs:
     steps:
       - name: SSH into production server and deploy
         uses: appleboy/ssh-action@master
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.DEV_TELEGRAM_BOT_TOKEN }}
+          DEVELOPER_CHAT_ID: ${{ secrets.DEVELOPER_CHAT_ID }}
+          SQLITE_DB_FILE_PATH: ${{ vars.SQLITE_DB_FILE_PATH }}
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
@@ -39,3 +43,5 @@ jobs:
             cd ./_work/${{ env.REPO_NAME  }}/${{ env.REPO_NAME  }}
             docker compose down
             docker compose up -d
+            docker compose ps
+          envs: TELEGRAM_BOT_TOKEN,DEVELOPER_CHAT_ID,SQLITE_DB_FILE_PATH

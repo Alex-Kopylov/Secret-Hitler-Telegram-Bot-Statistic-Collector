@@ -1,4 +1,4 @@
-FROM python:3.11.8-slim-bullseye as base-image
+FROM python:3.12.1-slim-bullseye as base-image
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -39,9 +39,11 @@ RUN poetry install --no-root
 ###############################################
 FROM base-image as production
 COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
-ENV PYTHONPATH=/service \
-    POETRY_PROJECT_PATH=/service/pyproject.toml
+
+ARG PYTHONPATH=/service
+ENV PYTHONPATH=$PYTHONPATH \
+    POETRY_PROJECT_PATH=$PYTHONPATH/pyproject.toml
 WORKDIR $PYTHONPATH
-COPY src src
-COPY .env .env
+COPY . .
+
 CMD ["python", "src/__main__.py"]

@@ -1,33 +1,35 @@
 version: '3'
 
 services:
-  sqlite3_db:
-    image: nouchka/sqlite3:latest
-    stdin_open: true
-    tty: true
+  bot:
+    build: .
+    environment:
+      - SQLITE_DB_FILE_PATH=${SQLITE_DB_FILE_PATH}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - DEVELOPER_CHAT_ID=${DEVELOPER_CHAT_ID}
     volumes:
-      - sqlite_data:/root/db
-    command: -init init.sql db.sqlite
-    restart: unless-stopped
+      - sqlite_data:/database
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+        - |
+          python -m sqlite3 ${SQLITE_DB_FILE_PATH} < src/sql/init.sql
+          python src/__main__.py
+    restart: always
 
   sqlitebrowser:
     image: linuxserver/sqlitebrowser
     ports:
       - "3000:3000"
-    depends_on:
-      - sqlite3_db
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=UTC
+      - TZ=GMT+4
       - ENABLE_UWSGI=true
     volumes:
       - sqlite_data:/database
+    profiles:
+      - sqlitebrowser
+    restart: unless-stopped
 
 volumes:
   sqlite_data:
-    driver: local
-    driver_opts:
-      type: none
-      device: $PWD/database
-      o: bind
