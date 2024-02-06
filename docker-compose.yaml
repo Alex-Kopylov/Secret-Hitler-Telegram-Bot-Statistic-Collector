@@ -12,7 +12,7 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command:
         - |
-          python -m sqlite3 ${SQLITE_DB_FILE_PATH} < src/sql/init.sql &&
+          python -m sqlite3 ${SQLITE_DB_FILE_PATH} < src/sql/init.sql
           python src/__main__.py
 #    restart: always
 
