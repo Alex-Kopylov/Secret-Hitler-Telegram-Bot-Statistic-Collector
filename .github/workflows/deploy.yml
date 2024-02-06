@@ -30,6 +30,9 @@ jobs:
     steps:
       - name: SSH into production server and deploy
         uses: appleboy/ssh-action@master
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.PROD_TELEGRAM_BOT_TOKEN }}
+          DEVELOPER_CHAT_ID: ${{ secrets.DEVELOPER_CHAT_ID }}
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
@@ -42,4 +45,5 @@ jobs:
               -e TELEGRAM_BOT_TOKEN=${{ secrets.PROD_TELEGRAM_BOT_TOKEN }} \
               -e DEVELOPER_CHAT_ID=${{ secrets.DEVELOPER_CHAT_ID }}
             docker compose ps
+          envs: TELEGRAM_BOT_TOKEN, DEVELOPER_CHAT_ID
             
