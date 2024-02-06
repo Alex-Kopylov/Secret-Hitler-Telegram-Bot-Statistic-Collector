@@ -31,7 +31,7 @@ def main() -> None:
     application.add_handlers(get_handlers())
     application.add_error_handler(handlers.error_handler)
     # send a message to the developer when the bot is ready
-    application.run_polling(allowed_updates=Update.ALL_TYPES)
+    application.run_polling()
 
 
 if __name__ == "__main__":
