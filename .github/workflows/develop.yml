@@ -43,4 +43,4 @@ jobs:
             docker compose down
             docker compose up -d
             docker compose ps
-          envs: TELEGRAM_BOT_TOKEN, DEVELOPER_CHAT_ID
+          envs: TELEGRAM_BOT_TOKEN,DEVELOPER_CHAT_ID

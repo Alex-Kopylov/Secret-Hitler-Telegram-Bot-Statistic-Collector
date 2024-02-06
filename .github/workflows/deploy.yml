@@ -45,5 +45,5 @@ jobs:
               -e TELEGRAM_BOT_TOKEN=${{ secrets.PROD_TELEGRAM_BOT_TOKEN }} \
               -e DEVELOPER_CHAT_ID=${{ secrets.DEVELOPER_CHAT_ID }}
             docker compose ps
-          envs: TELEGRAM_BOT_TOKEN, DEVELOPER_CHAT_ID
+          envs: TELEGRAM_BOT_TOKEN,DEVELOPER_CHAT_ID
             

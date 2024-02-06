@@ -5,6 +5,8 @@ services:
     build: .
     environment:
       - SQLITE_DB_FILE='/database/db.sqlite'
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - DEVELOPER_CHAT_ID=${DEVELOPER_CHAT_ID}
     volumes:
       - sqlite_data:/database
     command:
