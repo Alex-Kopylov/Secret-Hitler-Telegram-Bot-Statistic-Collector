@@ -3,10 +3,11 @@ import asyncio
 from telegram import Update
 from telegram.ext import ContextTypes
 
+from src.data_models.Game import Game
 from src.data_models.Record import Record
 from src.utils import message_is_poll, is_message_from_group_chat
 from src import db
-from src.services.db_service import save_record
+from src.services.db_service import save_record, save_game
 
 
 async def _pass_checks(
@@ -88,7 +89,14 @@ async def save(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                 for player_id, result in poll_data["results"].items()
             ]
         )
-
+        await save_game(
+            Game(
+                poll_id=poll_data["message_id"],
+                chat_id=poll_data["chat_id"],
+                creator_id=poll_data["creator_id"],
+                results=poll_data["results"].copy(),
+            )
+        )
     else:
         await update.effective_message.reply_text(
             "Something went wrong. Can't process your request."
