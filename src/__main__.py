@@ -5,9 +5,6 @@ Telegram bot entry point.
 import logging
 import traceback
 
-from telegram import (
-    Update,
-)
 from telegram.ext import (
     Application,
 )
@@ -20,7 +17,7 @@ from src.get_handlers import get_handlers
 
 def main() -> None:
     if not config.TELEGRAM_BOT_TOKEN:
-        raise ValueError("TELEGRAM_BOT_TOKEN env variable" "wasn't porpoused.")
+        raise ValueError("TELEGRAM_BOT_TOKEN env variable" "wasn't purposed.")
 
     application = Application.builder().token(config.TELEGRAM_BOT_TOKEN).build()
     application.add_handlers(get_handlers())
@@ -34,7 +31,8 @@ if __name__ == "__main__":
         main()
     except Exception:
         logging.basicConfig(
-            format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+            format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+            level=logging.INFO,
         )
         logger = logging.getLogger()
         logger.warning(traceback.format_exc())

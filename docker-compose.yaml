@@ -14,7 +14,7 @@ services:
         - |
           python -m sqlite3 ${SQLITE_DB_FILE_PATH} < src/sql/init.sql
           python src/__main__.py
-#    restart: always
+    restart: always
 
   sqlitebrowser:
     image: linuxserver/sqlitebrowser
@@ -23,12 +23,13 @@ services:
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=UTC
+      - TZ=GMT+4
       - ENABLE_UWSGI=true
     volumes:
       - sqlite_data:/database
     profiles:
       - sqlitebrowser
+    restart: unless-stopped
 
 volumes:
   sqlite_data:
