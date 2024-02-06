@@ -4,7 +4,7 @@ services:
   bot:
     build: .
     environment:
-      SQLITE_DB_FILE: "/database/db.sqlite"
+      - SQLITE_DB_FILE='/database/db.sqlite'
     volumes:
       - sqlite_data:/database
     command:
