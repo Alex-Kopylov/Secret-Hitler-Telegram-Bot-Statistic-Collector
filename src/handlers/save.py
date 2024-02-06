@@ -71,10 +71,6 @@ async def save(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         await context.bot.stop_poll(update.effective_chat.id, msg_with_poll.id)
 
         poll_data = context.bot_data[msg_with_poll.poll.id]
-        await update.effective_message.reply_text(
-            "Poll stopped. Results: {}".format(poll_data["results"])
-        )
-
         await asyncio.gather(
             *[
                 save_record(
@@ -89,13 +85,15 @@ async def save(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                 for player_id, result in poll_data["results"].items()
             ]
         )
-        await save_game(
-            Game(
-                poll_id=poll_data["message_id"],
-                chat_id=poll_data["chat_id"],
-                creator_id=poll_data["creator_id"],
-                results=poll_data["results"].copy(),
-            )
+        game = Game(
+            poll_id=poll_data["message_id"],
+            chat_id=poll_data["chat_id"],
+            creator_id=poll_data["creator_id"],
+            results=poll_data["results"].copy(),
+        )
+        await save_game(game)
+        await update.effective_message.reply_text(
+            "The Game has been saved!. Results: {}".format(game.results)
         )
     else:
         await update.effective_message.reply_text(

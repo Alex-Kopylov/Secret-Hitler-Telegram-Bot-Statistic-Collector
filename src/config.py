@@ -24,9 +24,11 @@ MAX_FASCIST_VOTERS = 3
 MIN_FASCIST_VOTERS = 1
 
 GAME_POLL_OUTCOMES: Tuple = (
+    "👀 SPECTATOR | NOT A PLAYER 👀",
     "I'm Canceler Hitler",
     "I'm Dead Hitler",
     "I'm Hitler Loser",
+    "I'm Hitler Winner",
     "I'm Liberal Winner",
     "I'm Liberal Loser",
     "I'm Fascistic Winner",
