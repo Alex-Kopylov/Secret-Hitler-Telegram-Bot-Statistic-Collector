@@ -141,3 +141,110 @@ def draw_topest_players(cur, n=4, best=True, normolize=True, ax=None):
     df.plot(kind='barh', stacked=True, color=['deepskyblue', 'orangered', 'darkred', 
                                               'lightblue', 'lightpink', 'rosybrown'], ax=ax, ylabel='')
 
+    
+def get_connection_stats(cur, username, order='DESC', top=None, which='teammate'):
+    """
+    Returns table containing number of wins and loses for each role and winrate
+    
+    Parameters:
+    -----------
+    cur : sqlite3 cursor
+        Cursor to the given database.
+        
+    username : string from table Players.username
+        Username of given player.
+        
+    order : str values 'DESC' or 'ASC'
+    
+    top : uint or None
+        Function will return top n number of results, if that's not None  
+    
+    which: str or None
+        Define which stats this function will return:
+        'teammate' : teammates stats, 
+        'opponent' : opponents stats,
+        None : full stats
+    
+    Returns:
+    --------
+    res : DataFrame
+        Columns: username, 
+                 LW - Wins playing in liberal team
+                 LL - Loses playing in liberal team
+                 FW - Wins playing in fascist team
+                 FL - Loses playing in fascist team
+                 winrate
+    """
+    query_which = {None: '', 
+                   'teammate': "\nAND ((records.role in ('LW', 'LL') AND w.team = 'Liberal') OR (records.role IN ('FW', 'FL', 'HC', 'HL') AND w.team = 'Fascist'))", 
+                   'opponent': "\nAND ((records.role in ('LW', 'LL') AND w.team = 'Fascist') OR (records.role IN ('FW', 'FL', 'HC', 'HL') AND w.team = 'Liberal'))"
+                  }[which]
+    if top is None:
+        query_limit = ''
+    else:
+        query_limit = f'\nLIMIT {top}'
+    query = f"""WITH w(game_id, team, result) AS (SELECT records.game_id, 
+                CASE WHEN records.role IN ('LL', 'LW') THEN 'Liberal' ELSE 'Fascist' END AS team, 
+                CASE WHEN records.role IN ('FW', 'LW', 'HC', 'HW') THEN 'Win' ELSE 'Lose' END AS result
+                FROM records INNER JOIN players ON players.id = records.player_id 
+                WHERE players.username = '{username}')
+                SElECT players.username, 
+                SUM(CASE WHEN team = 'Liberal' AND result = 'Win' THEN 1 ELSE 0 END) AS LW, 
+                SUM(CASE WHEN team = 'Fascist' AND result = 'Win' THEN 1 ELSE 0 END) AS FW, 
+                SUM(CASE WHEN team = 'Liberal' AND result = 'Lose' THEN 1 ELSE 0 END) AS LL, 
+                SUM(CASE WHEN team = 'Fascist' AND result = 'Lose' THEN 1 ELSE 0 END) AS FL, 
+                AVG(CASE WHEN result = 'Win' THEN 1 ELSE 0 END) AS Winrate
+                FROM records 
+                INNER JOIN w ON w.game_id = records.game_id 
+                INNER JOIN players ON players.id = records.player_id
+                WHERE players.username != '{username}'{query_which}
+                GROUP BY records.player_id
+                ORDER BY Winrate {order}{query_limit};"""
+    res = cur.execute(query).fetchall()
+    res = pd.DataFrame(res, columns=['username', 'LW', 'LL', 'FW', 'FL', 'winrate'])
+    return res
+
+
+def draw_connection_stats(cur, username, n=4, best=True, which='teammate', normolize=True, ax=None):
+    """
+    Draw hists for top best or worst players by winrate
+    
+    Parameters:
+    -----------
+    cur : sqlite3 cursor
+        Cursor to the given database.
+        
+    username : string from table Players.username
+        Username of given player.
+    
+    n : int
+        Number of players
+    
+    best : bool
+        If True, draws best players
+        If False, draws worst players
+        
+    which: str or None
+        Define which stats this function will return:
+        'teammate' : teammates stats, 
+        'opponent' : opponents stats,
+        None : full stats
+        
+    normolize : bool
+        Normolize values to sum be 1 for each player
+    
+    ax : matplotlib axes object, default None
+        An axes of the current figure
+    """
+    order = {True: "DESC", False: "ASC"}[best]
+    df = get_connection_stats(cur, username, order=order, top=n, which=which)[::-1]
+    df.index = df['username']
+    df = df[['LW', 'LL', 'FW', 'FL']]
+    df.columns = ['Liberal wins', 'Fascist wins', 
+                  'Liberal loses', 'Fascist loses']
+    if normolize:
+        df = df.transpose()
+        df = df / df.sum()
+        df = df.transpose()
+    df.plot(kind='barh', stacked=True, color=['deepskyblue', 'orangered', 
+                                              'lightblue', 'lightpink'], ax=ax, ylabel='')
