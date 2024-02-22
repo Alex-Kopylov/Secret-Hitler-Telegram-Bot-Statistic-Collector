@@ -44,17 +44,6 @@ async def save_playroom(playroom: Playroom) -> None:
         logging.info(f"Playroom {playroom.name} already exists in the database")
 
 
-async def save_playroom(playroom: Playroom) -> None:
-    """Add a game room to the bot_data"""
-    try:
-        await execute(
-            "INSERT INTO playrooms (id, name) VALUES (?, ?)",
-            (playroom.telegram_chat_id, playroom.name),
-        )
-    except sqlite3.IntegrityError:
-        logging.info(f"Playroom {playroom.name} already exists in the database")
-
-
 async def save_player(player: Player) -> None:
     """Add a player to the bot_data"""
     try:
