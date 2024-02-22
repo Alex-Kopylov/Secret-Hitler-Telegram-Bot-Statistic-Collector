@@ -95,6 +95,13 @@ async def save(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         await update.effective_message.reply_text(
             "The Game has been saved!. Results: {}".format(game.results)
         )
+        # Delete the poll
+        await context.bot.delete_message(
+            chat_id=game.chat_id,
+            message_id=game.poll_id
+        )
+        # Delete this callback /save message
+        await update.effective_message.delete()
     else:
         await update.effective_message.reply_text(
             "Something went wrong. Can't process your request."

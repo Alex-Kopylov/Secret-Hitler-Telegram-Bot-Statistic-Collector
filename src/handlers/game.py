@@ -38,3 +38,6 @@ async def game(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         )
     )
     context.bot_data.update(game_metadata)
+
+    # Delete command message
+    await update.effective_message.delete()
