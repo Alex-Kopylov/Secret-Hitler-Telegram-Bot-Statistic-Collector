@@ -1,9 +1,9 @@
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update
 from telegram.ext import ContextTypes
+
 from src import config
 from src.data_models.Playroom import Playroom
 from src.services.db_service import save_playroom
-from src.utils import message_is_poll, is_message_from_group_chat
 
 
 async def game(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -21,7 +21,7 @@ async def game(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     )
 
     # Save some info about the poll the bot_data for later use in receive_poll_answer
-    game_metadata = {
+    game_metadata = {  # TODO write it to DB
         message.poll.id: {
             "questions": questions,
             "message_id": message.id,  # will be game_id

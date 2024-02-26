@@ -1,7 +1,8 @@
-from enum import Enum
 from typing import Literal, Optional
-from src import config
+
 from pydantic import BaseModel, field_validator
+
+from src import config
 
 
 class Record(BaseModel):
@@ -39,3 +40,11 @@ class Record(BaseModel):
                 raise ValueError(
                     f"Invalid role '{v}' for Record. Role must be one of {config.GAME_POLL_OUTCOMES}"
                 )
+
+    def get_team(self) -> Optional[Literal["Fascist", "Liberal"]]:
+        if self.role in {"CH", "DH", "FW", "FL", "HL"}:
+            return "Fascist"
+        elif self.role in {"LW", "LL"}:
+            return "Liberal"
+        else:
+            return None

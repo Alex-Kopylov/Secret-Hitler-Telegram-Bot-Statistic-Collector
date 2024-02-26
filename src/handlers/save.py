@@ -5,9 +5,9 @@ from telegram.ext import ContextTypes
 
 from src.data_models.Game import Game
 from src.data_models.Record import Record
-from src.utils import message_is_poll, is_message_from_group_chat
-from src import db
 from src.services.db_service import save_record, save_game
+from src.services.draw_result_image import draw_result_image
+from src.utils import message_is_poll, is_message_from_group_chat
 
 
 async def _pass_checks(
@@ -67,41 +67,51 @@ async def save(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     msg_with_poll = (
         update.effective_message.reply_to_message
     )  # get a poll from reply message
-    if await _pass_checks(msg_with_poll, update, context):
+    if await _pass_checks(msg_with_poll=msg_with_poll, update=update, context=context):
         await context.bot.stop_poll(update.effective_chat.id, msg_with_poll.id)
 
         poll_data = context.bot_data[msg_with_poll.poll.id]
-        await asyncio.gather(
-            *[
-                save_record(
-                    Record(
-                        creator_id=poll_data["creator_id"],
-                        player_id=player_id,
-                        playroom_id=poll_data["chat_id"],
-                        game_id=poll_data["message_id"],
-                        role=result,
-                    ),
-                )
-                for player_id, result in poll_data["results"].items()
-            ]
-        )
+        records = [
+            Record(
+                creator_id=poll_data["creator_id"],
+                player_id=player_id,
+                playroom_id=poll_data["chat_id"],
+                game_id=poll_data["message_id"],
+                role=result,
+            )
+            for player_id, result in poll_data["results"].items()
+        ]
+        # await asyncio.gather(*[save_record(record) for record in records])
         game = Game(
             poll_id=poll_data["message_id"],
             chat_id=poll_data["chat_id"],
             creator_id=poll_data["creator_id"],
             results=poll_data["results"].copy(),
         )
-        await save_game(game)
-        await update.effective_message.reply_text(
-            "The Game has been saved!. Results: {}".format(game.results)
+        # post-game tasks
+        await asyncio.gather(
+            *[
+                *[save_record(record) for record in records],
+                save_game(game),
+                context.bot.delete_message(
+                    chat_id=game.chat_id, message_id=game.poll_id
+                ),
+                update.effective_message.delete(),
+                context.bot.send_photo(
+                    photo=(
+                        await draw_result_image(
+                            records=records,
+                            result=game.results,
+                            update=update,
+                            context=context,
+                        )
+                    ),
+                    chat_id=game.chat_id,
+                    caption="The Game has been saved!",
+                    disable_notification=True,
+                ),
+            ]
         )
-        # Delete the poll
-        await context.bot.delete_message(
-            chat_id=game.chat_id,
-            message_id=game.poll_id
-        )
-        # Delete this callback /save message
-        await update.effective_message.delete()
     else:
         await update.effective_message.reply_text(
             "Something went wrong. Can't process your request."
