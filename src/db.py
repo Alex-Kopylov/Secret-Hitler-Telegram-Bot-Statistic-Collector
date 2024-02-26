@@ -7,16 +7,16 @@ from src import config
 
 async def get_db() -> aiosqlite.Connection:
     if not getattr(get_db, "db", None):
-        db = await aiosqlite.connect(config.SQLITE_DB_FILE_PATH,
-                                     timeout=60 * 60 * 24 * 1  # 1 day
-                                     )
+        db = await aiosqlite.connect(
+            config.SQLITE_DB_FILE_PATH, timeout=60 * 60 * 24 * 1  # 1 day
+        )
         get_db.db = db
 
     return get_db.db
 
 
 async def fetch_all(
-        sql: LiteralString, params: Iterable[Any] | None = None
+    sql: LiteralString, params: Iterable[Any] | None = None
 ) -> list[dict]:
     cursor = await _get_cursor(sql, params)
     rows = await cursor.fetchall()
@@ -26,7 +26,7 @@ async def fetch_all(
 
 
 async def fetch_one(
-        sql: LiteralString, params: Iterable[Any] | None = None
+    sql: LiteralString, params: Iterable[Any] | None = None
 ) -> dict | None:
     cursor = await _get_cursor(sql, params)
     row = await cursor.fetchone()
@@ -36,7 +36,7 @@ async def fetch_one(
 
 
 async def execute(
-        sql: LiteralString, params: Iterable[Any] | None = None, *, autocommit: bool = True
+    sql: LiteralString, params: Iterable[Any] | None = None, *, autocommit: bool = True
 ) -> None:
     db = await get_db()
     await db.execute(sql, params)
@@ -53,7 +53,7 @@ async def _async_close_db() -> None:
 
 
 async def _get_cursor(
-        sql: LiteralString, params: Iterable[Any] | None
+    sql: LiteralString, params: Iterable[Any] | None
 ) -> aiosqlite.Cursor:
     db = await get_db()
     db.row_factory = aiosqlite.Row
