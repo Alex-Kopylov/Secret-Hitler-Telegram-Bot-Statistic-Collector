@@ -99,9 +99,6 @@ def create_board(svg, board_type, players):
         int(x) + int(width) // 2 - (len(players) * 170 + (len(players) - 1) * 30) // 2
     )
     for i, player in enumerate(players):
-        # item_group = SubElement(board, "g", id=f"item_{i}")
-        # with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as pic_file:
-        #     pic_file.write(requests.get(player["user_profile_photo"]).content)
         user_pic = SubElement(
             board,
             "image",
