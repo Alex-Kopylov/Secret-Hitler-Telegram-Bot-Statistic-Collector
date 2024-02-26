@@ -6,7 +6,22 @@ import cairosvg
 from telegram import Update
 from telegram.ext import ContextTypes
 
+import os
+from collections import namedtuple
+import tempfile
+import cairosvg
+import telegram
+from telegram import Update
+from telegram.ext import ContextTypes
+import requests
 from src import db
+from src.data_models.Record import Record
+
+from xml.etree.ElementTree import Element, SubElement, tostring
+from xml.dom.minidom import parseString
+from collections import namedtuple
+
+from src.data_models.Player import Player
 from src.data_models.Record import Record
 
 LIBERAL_COLOR = "#61C8D9"
