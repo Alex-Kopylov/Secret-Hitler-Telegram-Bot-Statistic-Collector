@@ -1,7 +1,8 @@
-from enum import Enum
 from typing import Literal, Optional
-from src import config
+
 from pydantic import BaseModel, field_validator
+
+from src import config
 
 
 class Record(BaseModel):

@@ -1,20 +1,12 @@
 import asyncio
-import os
-from collections import namedtuple
-import tempfile
+from xml.dom.minidom import parseString
+from xml.etree.ElementTree import Element, SubElement, tostring
+
 import cairosvg
-import telegram
 from telegram import Update
 from telegram.ext import ContextTypes
-import requests
+
 from src import db
-from src.data_models.Record import Record
-
-from xml.etree.ElementTree import Element, SubElement, tostring
-from xml.dom.minidom import parseString
-from collections import namedtuple
-
-from src.data_models.Player import Player
 from src.data_models.Record import Record
 
 LIBERAL_COLOR = "#61C8D9"
@@ -145,7 +137,7 @@ def create_board(svg, board_type, players):
         )
 
         username_text.text = player["name"]
-        player_x += 200  # 170 width + 30 space
+        player_x += 200  # Width 170 + 30 space
 
 
 def create_result(svg, outcome):
