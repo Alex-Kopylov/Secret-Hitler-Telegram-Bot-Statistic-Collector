@@ -9,17 +9,17 @@ from telegram.ext import (
     Application,
 )
 
-from src import config
+from src.config import AppConfig
 from src import handlers
 from src.db import close_db
 from src.get_handlers import get_handlers
 
 
-def main() -> None:
-    if not config.TELEGRAM_BOT_TOKEN:
-        raise ValueError("TELEGRAM_BOT_TOKEN env variable" "wasn't purposed.")
+def main(config: AppConfig = AppConfig()) -> None:
+    if not config.telegram_bot_token:
+        raise ValueError("telegram_bot_token env variable" "wasn't purposed.")
 
-    application = Application.builder().token(config.TELEGRAM_BOT_TOKEN).build()
+    application = Application.builder().token(config.telegram_bot_token).build()
     application.add_handlers(get_handlers())
     application.add_error_handler(handlers.error_handler)
     # send a message to the developer when the bot is ready

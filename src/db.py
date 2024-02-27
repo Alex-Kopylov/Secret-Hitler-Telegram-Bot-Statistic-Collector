@@ -2,13 +2,13 @@ import asyncio
 from collections.abc import Iterable
 from typing import Any, LiteralString
 import aiosqlite
-from src import config
+from src.config import AppConfig
 
 
-async def get_db() -> aiosqlite.Connection:
+async def get_db(config: AppConfig = AppConfig()) -> aiosqlite.Connection:
     if not getattr(get_db, "db", None):
         db = await aiosqlite.connect(
-            config.SQLITE_DB_FILE_PATH, timeout=60 * 60 * 24 * 1  # 1 day
+            config.sqlite_db_file_path, timeout=60 * 60 * 24 * 1  # 1 day
         )
         get_db.db = db
 

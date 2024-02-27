@@ -1,27 +1,14 @@
 import asyncio
+import logging
 from xml.dom.minidom import parseString
 from xml.etree.ElementTree import Element, SubElement, tostring
-
-import cairosvg
-from telegram import Update
-from telegram.ext import ContextTypes
-
-import os
-from collections import namedtuple
-import tempfile
 import cairosvg
 from telegram import Update
 from telegram.ext import ContextTypes
 
 from src import db
+from src.config import AppConfig
 from src.data_models.Record import Record
-
-LIBERAL_COLOR = "#61C8D9"
-LIBERAL_COLOR_STROKE = "#38586D"
-FASCIST_COLOR = "#E66443"
-FASCIST_COLOR_STROKE = "#7A1E16"
-
-STROKE_SIZE = str(12)
 
 
 def save_svg(svg_string, file_path):
@@ -54,15 +41,23 @@ def create_background(color):
     return svg
 
 
-def create_board(svg, board_type, players):
+def create_board(svg, board_type, players, config: AppConfig = AppConfig()):
     if board_type == "Fascist":
         board = SubElement(svg, "g", id="F_BOARD_GROUP")
         x, y, width, height = "56", "518", "1226", "360"
-        fill, stroke, stroke_width = FASCIST_COLOR, FASCIST_COLOR_STROKE, STROKE_SIZE
+        fill, stroke, stroke_width = (
+            config.fascist_color,
+            config.fascist_color_stroke,
+            config.stroke_size,
+        )
     else:  # Liberal
         board = SubElement(svg, "g", id="L_BOARD_GROUP")
         x, y, width, height = "56", "48", "1226", "360"
-        fill, stroke, stroke_width = LIBERAL_COLOR, LIBERAL_COLOR_STROKE, STROKE_SIZE
+        fill, stroke, stroke_width = (
+            config.liberal_color,
+            config.liberal_color_stroke,
+            config.stroke_size,
+        )
 
     board_rect = SubElement(
         board,
@@ -199,10 +194,14 @@ def draw_game_result(players: tuple[dict], outcome: str):
 
 
 async def get_user_profile_photo(context, player_id) -> str:
-    photo_objects = (
-        await context.bot.get_user_profile_photos(player_id, limit=1, offset=0)
-    ).photos[0]
-    return (await context.bot.get_file(photo_objects[-1])).file_path
+    try:
+        photo_objects = (
+            await context.bot.get_user_profile_photos(player_id, limit=1, offset=0)
+        ).photos[0]
+        return (await context.bot.get_file(photo_objects[-1])).file_path
+    except Exception as e:
+        logging.error(f"Error getting user profile photo: {e}")
+        return "assets/le_pol_face.jpg"
 
 
 async def get_player(context, record: Record):
