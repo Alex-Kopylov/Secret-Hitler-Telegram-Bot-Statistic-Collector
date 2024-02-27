@@ -38,6 +38,8 @@ RUN poetry install --no-root
 # Production Image
 ###############################################
 FROM base-image as production
+RUN apt-get update && \
+    apt-get install -y python3-cairosvg
 COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
 
 ARG PYTHONPATH=/service
