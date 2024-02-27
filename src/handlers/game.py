@@ -4,12 +4,15 @@ from telegram.ext import ContextTypes
 from src import config
 from src.data_models.Playroom import Playroom
 from src.services.db_service import save_playroom
+from src.config import AppConfig
 
 
-async def game(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def game(
+    update: Update, context: ContextTypes.DEFAULT_TYPE, config: AppConfig = AppConfig()
+) -> None:
     """Sends a predefined poll"""
 
-    questions = config.GAME_POLL_OUTCOMES
+    questions = config.game_poll_outcomes
 
     message = await context.bot.send_poll(
         update.effective_chat.id,

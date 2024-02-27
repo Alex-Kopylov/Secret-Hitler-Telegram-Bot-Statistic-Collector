@@ -5,8 +5,8 @@ from telegram.ext import ContextTypes
 
 from src.data_models.Game import Game
 from src.data_models.Record import Record
-from src.services.db_service import save_record, save_game
 from src.services.draw_result_image import draw_result_image
+from src.services.db_service import save_record, save_game
 from src.utils import message_is_poll, is_message_from_group_chat
 
 

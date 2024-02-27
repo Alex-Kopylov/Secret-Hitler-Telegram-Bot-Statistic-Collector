@@ -6,12 +6,14 @@ import html
 from telegram import Update
 from telegram.constants import ParseMode
 
-from src import config
+from src.config import AppConfig
 
 from telegram.ext import ContextTypes
 
 
-async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def error_handler(
+    update: object, context: ContextTypes.DEFAULT_TYPE, config: AppConfig = AppConfig()
+) -> None:
     # set a higher logging level for httpx to avoid all GET and POST requests being logged
     logging.getLogger("httpx").setLevel(logging.WARNING)
 
@@ -38,13 +40,13 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
         f"<pre>context.user_data = {html.escape(str(context.user_data))}</pre>\n\n"
         f"<pre>{html.escape(tb_string)}</pre>"
     )
-    if config.DEVELOPER_CHAT_ID:
+    if config.developer_chat_id:
         # Finally, send the message
         await context.bot.send_message(
-            chat_id=config.DEVELOPER_CHAT_ID, text=message, parse_mode=ParseMode.HTML
+            chat_id=config.developer_chat_id, text=message, parse_mode=ParseMode.HTML
         )
     else:
         logger.error(
-            "DEVELOPER_CHAT_ID env variable wasn't purposed. Please set it to your chat id if you want to "
+            "developer_chat_id env variable wasn't purposed. Please set it to your chat id if you want to "
             "receive error messages in telegram chat."
         )
