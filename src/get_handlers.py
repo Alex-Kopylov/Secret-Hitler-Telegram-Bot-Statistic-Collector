@@ -1,7 +1,7 @@
 from telegram.ext import PollAnswerHandler, CommandHandler
 
 from src import handlers
-from src.callbacks.receive_poll_answer import receive_poll_answer
+from src.callbacks.poll_callback_receiver import poll_callback_receiver
 
 
 def get_handlers() -> tuple:
@@ -12,5 +12,5 @@ def get_handlers() -> tuple:
         CommandHandler("game", handlers.game),
         CommandHandler("save", handlers.save),
         # Poll answer handler
-        PollAnswerHandler(receive_poll_answer),
+        PollAnswerHandler(poll_callback_receiver),
     )

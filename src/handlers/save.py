@@ -3,10 +3,16 @@ import asyncio
 from telegram import Update
 from telegram.ext import ContextTypes
 
+from src.config import AppConfig
 from src.data_models.Game import Game
 from src.data_models.Record import Record
+from src.services.db_service import (
+    save_record,
+    save_game,
+    fetch_poll_data,
+    fetch_poll_results,
+)
 from src.services.draw_result_image import draw_result_image
-from src.services.db_service import save_record, save_game
 from src.utils import message_is_poll, is_message_from_group_chat
 
 
@@ -31,86 +37,72 @@ async def _pass_checks(
             "Please reply to a poll to stop and record results."
         )
         return False
-    # check reply msg is from the bot
-    if msg_with_poll.from_user.id != context.bot.id:
+
+    poll_data = await fetch_poll_data(msg_with_poll.poll.id)
+    if not poll_data:
         await update.effective_message.reply_text(
-            f"Please reply to poll created by me @{context.bot.username}."
+            "Could not find the poll information in the database."
         )
         return False
-    # check user is creator of the poll
-    if (
-        update.effective_user.id
-        != context.bot_data[msg_with_poll.poll.id]["creator_id"]
-    ):
+
+    if update.effective_user.id != poll_data.creator_id:
         await update.effective_message.reply_text(
-            f"You are not the creator of the game! "
-            f"Only @{context.bot_data[msg_with_poll.poll.id]['creator_username']} can stop this poll."
+            f"You are not the creator of the game! Only @{poll_data['creator_username']} can stop this poll."
         )
         return False
-    # check the poll is in the same chat as the reply msg
-    if update.effective_chat.id != context.bot_data[msg_with_poll.poll.id]["chat_id"]:
+
+    if update.effective_chat.id != poll_data.chat_id:
         await update.effective_message.reply_text(
-            f"You can only save game in a group chat where other players can see the results."
+            "You can only save the game in the group chat where the poll was created."
         )
         return False
 
     return True
 
 
-async def save(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Saves a game
-    Replying /save to the poll message (created by the bot) stops the poll
-    It can only be done by the creator of the poll
-    Save poll results
-    """
-
-    msg_with_poll = (
-        update.effective_message.reply_to_message
-    )  # get a poll from reply message
+async def save(
+    update: Update, context: ContextTypes.DEFAULT_TYPE, config: AppConfig = AppConfig()
+) -> None:
+    msg_with_poll = update.effective_message.reply_to_message
     if await _pass_checks(msg_with_poll=msg_with_poll, update=update, context=context):
-        await context.bot.stop_poll(update.effective_chat.id, msg_with_poll.id)
+        await context.bot.stop_poll(update.effective_chat.id, msg_with_poll.message_id)
+        poll_id = int(msg_with_poll.poll.id)
+        poll_data, poll_results = await asyncio.gather(
+            fetch_poll_data(poll_id), fetch_poll_results(poll_id)
+        )
 
-        poll_data = context.bot_data[msg_with_poll.poll.id]
         records = [
             Record(
-                creator_id=poll_data["creator_id"],
-                player_id=player_id,
-                playroom_id=poll_data["chat_id"],
-                game_id=poll_data["message_id"],
-                role=result,
+                creator_id=poll_data.creator_id,
+                player_id=results.user_id,
+                playroom_id=poll_data.chat_id,
+                game_id=poll_data.message_id,
+                role=results.get_answer_as_text(),
             )
-            for player_id, result in poll_data["results"].items()
+            for results in poll_results
         ]
-        # await asyncio.gather(*[save_record(record) for record in records])
+
         game = Game(
-            poll_id=poll_data["message_id"],
-            chat_id=poll_data["chat_id"],
-            creator_id=poll_data["creator_id"],
-            results=poll_data["results"].copy(),
+            poll_id=poll_data.message_id,
+            chat_id=poll_data.chat_id,
+            creator_id=poll_data.creator_id,
+            results=poll_results,
         )
-        # post-game tasks
+
+        # Execute post-game tasks
         await asyncio.gather(
-            *[
-                *[save_record(record) for record in records],
-                save_game(game),
-                context.bot.delete_message(
-                    chat_id=game.chat_id, message_id=game.poll_id
+            save_game(game),
+            *(save_record(record) for record in records),
+            context.bot.delete_message(chat_id=game.chat_id, message_id=game.poll_id),
+            update.effective_message.delete(),
+            context.bot.send_photo(
+                chat_id=game.chat_id,
+                photo=await draw_result_image(
+                    records=records, result=game.results, update=update, context=context
                 ),
-                update.effective_message.delete(),
-                context.bot.send_photo(
-                    photo=(
-                        await draw_result_image(
-                            records=records,
-                            result=game.results,
-                            update=update,
-                            context=context,
-                        )
-                    ),
-                    chat_id=game.chat_id,
-                    caption="The Game has been saved!",
-                    disable_notification=True,
-                ),
-            ]
+                caption="The Game has been saved!",
+                disable_notification=True,
+            ),
         )
     else:
         await update.effective_message.reply_text(
