@@ -1,0 +1,8 @@
+version: '3.7'  # Use a more recent version if needed
+
+services:
+  bot:
+    volumes:
+      - sqlite_data_dev:/database
+volumes:
+  sqlite_data_dev:
