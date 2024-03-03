@@ -17,12 +17,8 @@ jobs:
         include:
           - environment: develop
             compose_files: "docker-compose.yml -f docker-compose.dev.yml"
-            TELEGRAM_BOT_TOKEN: ${{ secrets.DEV_TELEGRAM_BOT_TOKEN }}
           - environment: main
             compose_files: "docker-compose.yml -f docker-compose.prod.yml"
-            TELEGRAM_BOT_TOKEN: ${{ secrets.PROD_TELEGRAM_BOT_TOKEN }}
-    env:
-      TELEGRAM_BOT_TOKEN: ${{ matrix.TELEGRAM_BOT_TOKEN }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -46,12 +42,17 @@ jobs:
         include:
           - environment: develop
             compose_files: "docker-compose.yml -f docker-compose.dev.yml"
+            TELEGRAM_BOT_TOKEN: DEV_TELEGRAM_BOT_TOKEN
           - environment: main
             compose_files: "docker-compose.yml -f docker-compose.prod.yml"
-    if: github.ref == 'refs/heads/${{ matrix.environment }}'
+            TELEGRAM_BOT_TOKEN: PROD_TELEGRAM_BOT_TOKEN
     steps:
       - name: Deploy to server
         uses: appleboy/ssh-action@master
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.${{ matrix.TELEGRAM_BOT_TOKEN }} }}
+          DEVELOPER_CHAT_ID: ${{ secrets.DEVELOPER_CHAT_ID }}
+          SQLITE_DB_FILE_PATH: ${{ vars.SQLITE_DB_FILE_PATH }}
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
