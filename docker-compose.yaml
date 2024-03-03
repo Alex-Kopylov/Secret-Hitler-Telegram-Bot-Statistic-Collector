@@ -7,6 +7,7 @@ services:
       - SQLITE_DB_FILE_PATH=/database/db.sqlite
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - DEVELOPER_CHAT_ID=${DEVELOPER_CHAT_ID}
+      - TZ=GMT
     volumes:
       - sqlite_data:/database
     entrypoint: ["/bin/sh", "-c"]
@@ -23,7 +24,7 @@ services:
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=GMT+4
+      - TZ=GMT
       - ENABLE_UWSGI=true
     volumes:
       - sqlite_data:/database
