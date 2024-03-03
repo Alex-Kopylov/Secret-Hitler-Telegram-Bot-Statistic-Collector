@@ -3,18 +3,23 @@ from typing import Literal
 from pydantic import BaseModel, field_validator
 
 from src import config
+from src.data_models.PollResult import PollResult
 
 
 class Game(BaseModel):
     poll_id: int
     chat_id: int
-    results: dict  # Literal["Hitler Canceler", "Fascist Law", "Hitler Death", "Liberal Law"]
+    results: tuple[
+        PollResult, ...
+    ]  # Literal["Hitler Canceler", "Fascist Law", "Hitler Death", "Liberal Law"]
     creator_id: int
 
     @field_validator("results", mode="after")
     @classmethod
-    def validate_results(cls, v: dict) -> Literal["CH", "DH", "FW", "LW"]:
-        outcomes = set(v.values())
+    def validate_results(
+        cls, results: tuple[PollResult]
+    ) -> Literal["CH", "DH", "FW", "LW"]:
+        outcomes = set(outcome.get_answer_as_text() for outcome in results)
         if "I'm Canceler Hitler" in outcomes:
             return "CH"
         if "I'm Dead Hitler" in outcomes:

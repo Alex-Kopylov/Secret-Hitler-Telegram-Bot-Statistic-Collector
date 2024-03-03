@@ -4,8 +4,9 @@ from pydantic import BaseModel
 
 
 class Poll(BaseModel):
-    poll_id: int
+    id: int
     message_id: int
     chat_id: int
+    chat_name: str
     creator_id: int
-    poll_type: Literal["default_game"] = "default"
+    creator_username: str

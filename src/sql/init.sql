@@ -50,4 +50,28 @@ CREATE TABLE IF NOT EXISTS records (
     FOREIGN KEY (playroom_id) REFERENCES playrooms(id)
 );
 
+-- Create table for Polls
+CREATE TABLE IF NOT EXISTS polls (
+    id INTEGER PRIMARY KEY NOT NULL UNIQUE, -- Unique poll id
+    message_id INTEGER NOT NULL, -- Corresponding game id from the games table
+    chat_id INTEGER NOT NULL, -- Corresponding playroom id from the playrooms table
+    chat_name TEXT NOT NULL, -- Name of the chat from the playroom
+    creator_id INTEGER NOT NULL, -- Id of the player who created the poll
+    creator_username TEXT NOT NULL, -- Username of the player who created the poll
+    creation_time DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    FOREIGN KEY (message_id) REFERENCES games(id),
+    FOREIGN KEY (chat_id) REFERENCES playrooms(id),
+    FOREIGN KEY (creator_id) REFERENCES players(id)
+);
+
+-- Create table for Poll Results
+CREATE TABLE IF NOT EXISTS poll_results (
+    poll_id INTEGER NOT NULL, -- Corresponding poll id from the polls table
+    user_id INTEGER NOT NULL, -- Id of the player who answered the poll
+    answer TEXT NOT NULL, -- The answer given by the player
+    FOREIGN KEY (poll_id) REFERENCES polls(id),
+    FOREIGN KEY (user_id) REFERENCES players(id),
+    UNIQUE(poll_id, user_id)
+);
+
 .quit
