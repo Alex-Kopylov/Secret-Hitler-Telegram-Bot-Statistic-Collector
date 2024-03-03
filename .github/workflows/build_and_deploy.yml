@@ -8,6 +8,7 @@ on:
 
 env:
   REPO_NAME: ${{ github.event.repository.name }}
+  COMPOSE_PROJECT_NAME: ${{ github.event.repository.name }}
 
 jobs:
   build:
@@ -60,9 +61,9 @@ jobs:
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
             cd ./_work/${{ env.REPO_NAME }}/${{ env.REPO_NAME }}
-            docker compose -p ${{ env.REPO_NAME }}_${{ matrix.environment }} ${{ matrix.compose_files }} up -d
+            docker compose -p $(echo "${{ env.REPO_NAME }}" | tr '[:upper:]' '[:lower:]')_${{ matrix.environment }} ${{ matrix.compose_files }} up -d
             sleep 5 # Allow services to start
-            if ! docker compose -p ${{ env.REPO_NAME }}_${{ matrix.environment }} ${{ matrix.compose_files }} ps | grep -q 'Up'; then
+            if ! ocker compose -p $(echo "${{ env.REPO_NAME }}" | tr '[:upper:]' '[:lower:]')_${{ matrix.environment }} ${{ matrix.compose_files }} ps | grep -q 'Up'; then
               echo "One or more containers are not running as expected."
               exit 1
             fi
