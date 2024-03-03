@@ -1,4 +1,4 @@
-name: CI/CD with Docker Compose
+name: Build and Deploy Workflow
 
 on:
   push:
@@ -14,19 +14,20 @@ jobs:
     runs-on: [self-hosted]
     strategy:
       matrix:
-        environment:
-          - { name: "develop", compose_file: "docker-compose.dev.yml", project_name_suffix: "_dev" }
-          - { name: "main", compose_file: "docker-compose.prod.yml", project_name_suffix: "_prod" }
         include:
-          - environment: "develop"
+          - environment: develop
+            compose_files: "docker-compose.yml -f docker-compose.dev.yml"
             TELEGRAM_BOT_TOKEN: ${{ secrets.DEV_TELEGRAM_BOT_TOKEN }}
-          - environment: "main"
+          - environment: main
+            compose_files: "docker-compose.yml -f docker-compose.prod.yml"
             TELEGRAM_BOT_TOKEN: ${{ secrets.PROD_TELEGRAM_BOT_TOKEN }}
-    if: github.ref == 'refs/heads/${{ matrix.environment.name }}'
+    env:
+      TELEGRAM_BOT_TOKEN: ${{ matrix.TELEGRAM_BOT_TOKEN }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Build with Docker Compose
+
+      - name: Build container
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST }}
@@ -35,21 +36,21 @@ jobs:
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
             cd ./_work/${{ env.REPO_NAME }}/${{ env.REPO_NAME }}
-            docker compose -p ${{ env.REPO_NAME }}${{ matrix.environment.project_name_suffix }} -f ${{ matrix.environment.compose_file }} build --no-cache
+            docker compose -p ${{ env.REPO_NAME }}_${{ matrix.environment }} ${matrix.compose_files} build --no-cache
 
   deploy:
     needs: build
-    runs-on: [ self-hosted ]
+    runs-on: [self-hosted]
     strategy:
       matrix:
         include:
-          - environment: dev
-            compose_files: "-f docker-compose.yml -f docker-compose.dev.yml"
-          - environment: prod
-            compose_files: "-f docker-compose.yml -f docker-compose.prod.yml"
+          - environment: develop
+            compose_files: "docker-compose.yml -f docker-compose.dev.yml"
+          - environment: main
+            compose_files: "docker-compose.yml -f docker-compose.prod.yml"
     if: github.ref == 'refs/heads/${{ matrix.environment }}'
     steps:
-      - name: SSH into server and deploy
+      - name: Deploy to server
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST }}
@@ -58,9 +59,9 @@ jobs:
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
             cd ./_work/${{ env.REPO_NAME }}/${{ env.REPO_NAME }}
-            docker compose ${matrix.compose_files} -p ${{ env.REPO_NAME }}_${{ matrix.environment }} up -d
-            sleep 10 # Wait a bit for services to start
-            if ! docker compose ${matrix.compose_files} -p ${{ env.REPO_NAME }}_${{ matrix.environment }} ps | grep -q 'Up'; then
+            docker compose -p ${{ env.REPO_NAME }}_${{ matrix.environment }} ${matrix.compose_files} up -d
+            sleep 5 # Allow services to start
+            if ! docker compose -p ${{ env.REPO_NAME }}_${{ matrix.environment }} ${matrix.compose_files} ps | grep -q 'Up'; then
               echo "One or more containers are not running as expected."
               exit 1
             fi
