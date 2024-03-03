@@ -32,7 +32,7 @@ jobs:
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
             cd ./_work/${{ env.REPO_NAME }}/${{ env.REPO_NAME }}
-            docker compose -p ${{ env.REPO_NAME }}_${{ matrix.environment }} ${matrix.compose_files} build --no-cache
+            docker compose -p ${{ env.REPO_NAME }}_${{ matrix.environment }} ${{ matrix.compose_files }} build --no-cache
 
   deploy:
     needs: build
@@ -60,9 +60,9 @@ jobs:
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
             cd ./_work/${{ env.REPO_NAME }}/${{ env.REPO_NAME }}
-            docker compose -p ${{ env.REPO_NAME }}_${{ matrix.environment }} ${matrix.compose_files} up -d
+            docker compose -p ${{ env.REPO_NAME }}_${{ matrix.environment }} ${{ matrix.compose_files }} up -d
             sleep 5 # Allow services to start
-            if ! docker compose -p ${{ env.REPO_NAME }}_${{ matrix.environment }} ${matrix.compose_files} ps | grep -q 'Up'; then
+            if ! docker compose -p ${{ env.REPO_NAME }}_${{ matrix.environment }} ${{ matrix.compose_files }} ps | grep -q 'Up'; then
               echo "One or more containers are not running as expected."
               exit 1
             fi
