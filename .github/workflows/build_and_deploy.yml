@@ -50,7 +50,7 @@ jobs:
       - name: Deploy to server
         uses: appleboy/ssh-action@master
         env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.${{ matrix.TELEGRAM_BOT_TOKEN }} }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets[matrix.TELEGRAM_BOT_TOKEN] }}
           DEVELOPER_CHAT_ID: ${{ secrets.DEVELOPER_CHAT_ID }}
           SQLITE_DB_FILE_PATH: ${{ vars.SQLITE_DB_FILE_PATH }}
         with:
