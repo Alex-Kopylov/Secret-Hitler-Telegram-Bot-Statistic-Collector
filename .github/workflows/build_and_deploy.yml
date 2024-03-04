@@ -42,10 +42,10 @@ jobs:
       matrix:
         include:
           - environment: develop
-            compose_files: "docker-compose.yml -f docker-compose.dev.yml"
+            compose_files: "-f docker-compose.yml -f docker-compose.dev.yml"
             TELEGRAM_BOT_TOKEN: DEV_TELEGRAM_BOT_TOKEN
           - environment: main
-            compose_files: "docker-compose.yml -f docker-compose.prod.yml"
+            compose_files: "-f docker-compose.yml -f docker-compose.prod.yml"
             TELEGRAM_BOT_TOKEN: PROD_TELEGRAM_BOT_TOKEN
     steps:
       - name: Deploy to server
