@@ -41,8 +41,8 @@ ARG CAIROSVG_VERSION=2.7.1
 ENV CAIROSVG_VERSION=$CAIROSVG_VERSION
 
 FROM base-image as production
-RUN apt-get update && \
-    apt-get install -y python3-cairosvg=$CAIROSVG_VERSION
+#RUN apt-get update && \
+#    apt-get install -y python3-cairosvg=$CAIROSVG_VERSION
 COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
 
 ARG PYTHONPATH=/service
