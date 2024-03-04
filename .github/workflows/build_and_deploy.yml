@@ -17,9 +17,9 @@ jobs:
       matrix:
         include:
           - environment: develop
-            compose_files: "docker-compose.yml -f docker-compose.dev.yml"
+            compose_files: "-f docker-compose.yml -f docker-compose.dev.yml"
           - environment: main
-            compose_files: "docker-compose.yml -f docker-compose.prod.yml"
+            compose_files: "-f docker-compose.yml -f docker-compose.prod.yml"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
