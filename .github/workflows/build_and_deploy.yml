@@ -11,18 +11,25 @@ env:
   COMPOSE_PROJECT_NAME: sh_bot_stat_collector
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: [self-hosted]
-    strategy:
-      matrix:
-        include:
-          - environment: develop
-            compose_files: "-f docker-compose.yml -f docker-compose.dev.yml"
-          - environment: main
-            compose_files: "-f docker-compose.yml -f docker-compose.prod.yml"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Set environment for develop branch
+        if: github.ref == 'refs/heads/develop'
+        run: |
+          echo "COMPOSE_FILES=-f docker-compose.yml -f docker-compose.dev.yml" >> $GITHUB_ENV
+          echo "ENVIRONMENT=develop" >> $GITHUB_ENV
+          echo "TELEGRAM_BOT_TOKEN=${{ secrets.DEV_TELEGRAM_BOT_TOKEN }}" >> $GITHUB_ENV
+
+      - name: Set environment for main branch
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo "COMPOSE_FILES=-f docker-compose.yml -f docker-compose.prod.yml" >> $GITHUB_ENV
+          echo "ENVIRONMENT=main" >> $GITHUB_ENV
+          echo "TELEGRAM_BOT_TOKEN=${{ secrets.PROD_TELEGRAM_BOT_TOKEN }}" >> $GITHUB_ENV
 
       - name: Build container
         uses: appleboy/ssh-action@master
@@ -33,27 +40,13 @@ jobs:
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
             cd ./_work/${{ env.REPO_NAME }}/${{ env.REPO_NAME }}
-            docker compose -p ${{ env.COMPOSE_PROJECT_NAME }}_${{ matrix.environment }} ${{ matrix.compose_files }} build --no-cache
+            docker compose -p sh_bot_stat_collector_${{ env.ENVIRONMENT }} ${{ env.COMPOSE_FILES }} build --no-cache
 
-  deploy:
-    needs: build
-    runs-on: [self-hosted]
-    strategy:
-      matrix:
-        include:
-          - environment: develop
-            compose_files: "-f docker-compose.yml -f docker-compose.dev.yml"
-            TELEGRAM_BOT_TOKEN: DEV_TELEGRAM_BOT_TOKEN
-          - environment: main
-            compose_files: "-f docker-compose.yml -f docker-compose.prod.yml"
-            TELEGRAM_BOT_TOKEN: PROD_TELEGRAM_BOT_TOKEN
-    steps:
       - name: Deploy to server
         uses: appleboy/ssh-action@master
         env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets[matrix.TELEGRAM_BOT_TOKEN] }}
           DEVELOPER_CHAT_ID: ${{ secrets.DEVELOPER_CHAT_ID }}
-          SQLITE_DB_FILE_PATH: ${{ vars.SQLITE_DB_FILE_PATH }}
+          SQLITE_DB_FILE_PATH: ${{ secrets.SQLITE_DB_FILE_PATH }}
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
@@ -61,9 +54,8 @@ jobs:
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
             cd ./_work/${{ env.REPO_NAME }}/${{ env.REPO_NAME }}
-            docker compose -p ${{ env.COMPOSE_PROJECT_NAME }}_${{ matrix.environment }} ${{ matrix.compose_files }} up -d
+            docker compose -p ${{ env.COMPOSE_PROJECT_NAME }}_${{ env.ENVIRONMENT }} ${{ env.COMPOSE_FILES }} up -d
             sleep 5 # Allow services to start
-            if ! docker compose -p ${{ env.COMPOSE_PROJECT_NAME }}_${{ matrix.environment }} ${{ matrix.compose_files }} ps | grep -q 'Up'; then
+            if ! docker compose -p ${{ env.COMPOSE_PROJECT_NAME }}_${{ env.ENVIRONMENT }} ${{ env.COMPOSE_FILES }} ps | grep -q 'Up'; then
               echo "One or more containers are not running as expected."
               exit 1
-            fi
