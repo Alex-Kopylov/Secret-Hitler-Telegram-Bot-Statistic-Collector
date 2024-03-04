@@ -1,4 +1,4 @@
-version: '3.7'  # Use a more recent version if needed
+version: '3.8'
 
 services:
   bot:
@@ -9,9 +9,10 @@ services:
       DEVELOPER_CHAT_ID: ${DEVELOPER_CHAT_ID}
       TZ: ${TZ-GMT}  # Default to GMT if TZ is not specified
     entrypoint: ["/bin/sh", "-c"]
-    command: |
-      python -m sqlite3 ${SQLITE_DB_FILE_PATH} < src/sql/init.sql;
-      python src/__main__.py;
+    command:
+      - |
+        python -m sqlite3 ${SQLITE_DB_FILE_PATH} < src/sql/init.sql;
+        python src/__main__.py;
     restart: always
 
 # Only define services specific to development or production in their respective override files

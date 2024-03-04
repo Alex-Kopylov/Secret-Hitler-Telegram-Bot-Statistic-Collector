@@ -1,20 +1,9 @@
-version: '3.7'  # Use a more recent version if needed
+version: '3.8' 
 
 services:
   bot:
-    build: .
-    environment:
-      SQLITE_DB_FILE_PATH: /database/db.sqlite
-      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
-      DEVELOPER_CHAT_ID: ${DEVELOPER_CHAT_ID}
-      TZ: ${TZ-GMT}  # Default to GMT if TZ is not specified
     volumes:
       - sqlite_data:/database
-    entrypoint: ["/bin/sh", "-c"]
-    command: |
-      python -m sqlite3 ${SQLITE_DB_FILE_PATH} < src/sql/init.sql;
-      python src/__main__.py;
-    restart: always
 
 volumes:
   sqlite_data:
