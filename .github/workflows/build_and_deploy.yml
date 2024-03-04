@@ -47,6 +47,7 @@ jobs:
         env:
           DEVELOPER_CHAT_ID: ${{ secrets.DEVELOPER_CHAT_ID }}
           SQLITE_DB_FILE_PATH: ${{ secrets.SQLITE_DB_FILE_PATH }}
+          TELEGRAM_BOT_TOKEN: ${{ env.TELEGRAM_BOT_TOKEN }}
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
