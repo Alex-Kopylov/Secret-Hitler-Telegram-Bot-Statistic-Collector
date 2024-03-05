@@ -9,6 +9,9 @@ on:
 env:
   REPO_NAME: ${{ github.event.repository.name }}
   COMPOSE_PROJECT_NAME: sh_bot_stat_collector
+  ENVIRONMENT: ${{ github.ref == 'refs/heads/develop' && 'dev' || 'prod' }}
+  COMPOSE_FILES: ${{ github.ref == 'refs/heads/develop' && '-f docker-compose.yml -f docker-compose.dev.yml' || '-f docker-compose.yml -f docker-compose.prod.yml' }}
+  TELEGRAM_BOT_TOKEN: ${{ github.ref == 'refs/heads/develop' && secrets.DEV_TELEGRAM_BOT_TOKEN || secrets.PROD_TELEGRAM_BOT_TOKEN }}
 
 jobs:
   build:
@@ -16,20 +19,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Set environment for develop branch
-        if: github.ref == 'refs/heads/develop'
-        run: |
-          echo "COMPOSE_FILES=-f docker-compose.yml -f docker-compose.dev.yml" >> $GITHUB_ENV
-          echo "ENVIRONMENT=develop" >> $GITHUB_ENV
-          echo "TELEGRAM_BOT_TOKEN=${{ secrets.DEV_TELEGRAM_BOT_TOKEN }}" >> $GITHUB_ENV
-
-      - name: Set environment for main branch
-        if: github.ref == 'refs/heads/main'
-        run: |
-          echo "COMPOSE_FILES=-f docker-compose.yml -f docker-compose.prod.yml" >> $GITHUB_ENV
-          echo "ENVIRONMENT=main" >> $GITHUB_ENV
-          echo "TELEGRAM_BOT_TOKEN=${{ secrets.PROD_TELEGRAM_BOT_TOKEN }}" >> $GITHUB_ENV
 
       - name: Build container
         uses: appleboy/ssh-action@master
