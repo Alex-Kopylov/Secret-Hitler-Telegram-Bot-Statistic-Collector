@@ -91,5 +91,5 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
-            curl -s -X POST https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage -d chat_id=${DEVELOPER_CHAT_ID} -d text="Successfully deployed ${{ github.event.workflow_run.head_commit.message }} to ${{ env.ENVIRONMENT }} environment"
+            curl -s -X POST https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage -d chat_id=${DEVELOPER_CHAT_ID} -d text="Successfully deployed SHA: ${{ github.sha }} to ${{ env.ENVIRONMENT }} environment"
           envs: TELEGRAM_BOT_TOKEN,DEVELOPER_CHAT_ID
