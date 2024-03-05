@@ -1,0 +1,95 @@
+name: Build and Deploy Workflow
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+
+env:
+  REPO_NAME: ${{ github.event.repository.name }}
+  COMPOSE_PROJECT_NAME: sh_bot_stat_collector
+  ENVIRONMENT: ${{ github.ref == 'refs/heads/develop' && 'dev' || 'prod' }}
+  COMPOSE_FILES: ${{ github.ref == 'refs/heads/develop' && '-f docker-compose.yml -f docker-compose.dev.yml' || '-f docker-compose.yml -f docker-compose.prod.yml' }}
+  TELEGRAM_BOT_TOKEN: ${{ github.ref == 'refs/heads/develop' && secrets.DEV_TELEGRAM_BOT_TOKEN || secrets.PROD_TELEGRAM_BOT_TOKEN }}
+
+jobs:
+  build:
+    runs-on: [self-hosted]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build container
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          script: |
+            cd ./_work/${{ env.REPO_NAME }}/${{ env.REPO_NAME }}
+            docker compose -p sh_bot_stat_collector_${{ env.ENVIRONMENT }} ${{ env.COMPOSE_FILES }} build --no-cache
+
+  deploy:
+    needs: build
+    runs-on: [self-hosted]
+    steps:
+      - name: Deploy to server
+        uses: appleboy/ssh-action@master
+        env:
+          DEVELOPER_CHAT_ID: ${{ secrets.DEVELOPER_CHAT_ID }}
+          SQLITE_DB_FILE_PATH: ${{ secrets.SQLITE_DB_FILE_PATH }}
+          TELEGRAM_BOT_TOKEN: ${{ env.TELEGRAM_BOT_TOKEN }}
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          script: |
+            cd ./_work/${{ env.REPO_NAME }}/${{ env.REPO_NAME }}
+            docker compose -p ${{ env.COMPOSE_PROJECT_NAME }}_${{ env.ENVIRONMENT }} ${{ env.COMPOSE_FILES }} up -d --force-recreate;
+          envs: TELEGRAM_BOT_TOKEN,DEVELOPER_CHAT_ID,SQLITE_DB_FILE_PATH
+
+  deploy-check:
+    needs: deploy
+    runs-on: [self-hosted]
+    steps:
+      - name: Docker Compose is up
+        uses: appleboy/ssh-action@master
+        env:
+          DEVELOPER_CHAT_ID: ${{ secrets.DEVELOPER_CHAT_ID }}
+          TELEGRAM_BOT_TOKEN: ${{ env.TELEGRAM_BOT_TOKEN }}
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          script: |
+            sleep 5; # Allow services to start
+            service_name=$(docker compose -p ${{ env.COMPOSE_PROJECT_NAME }}_${{ env.ENVIRONMENT }} ${{ env.COMPOSE_FILES }} ps --services);
+            for service in $service_name; do
+              if ! docker compose -p ${{ env.COMPOSE_PROJECT_NAME }}_${{ env.ENVIRONMENT }} ${{ env.COMPOSE_FILES }} ps | grep -q "$service.* Up"; then
+                echo "$service not running as expected.";
+                exit 1;
+              fi;
+            done;
+          envs: TELEGRAM_BOT_TOKEN,DEVELOPER_CHAT_ID
+
+  notification:
+    needs: deploy-check
+    runs-on: [self-hosted]
+    steps:
+      - name: Notify developer
+        uses: appleboy/ssh-action@master
+        env:
+          DEVELOPER_CHAT_ID: ${{ secrets.DEVELOPER_CHAT_ID }}
+          TELEGRAM_BOT_TOKEN: ${{ env.TELEGRAM_BOT_TOKEN }}
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          script: |
+            curl -s -X POST https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage -d chat_id=${DEVELOPER_CHAT_ID} -d text="Successfully deployed SHA: ${{ github.sha }} to ${{ env.ENVIRONMENT }} environment"
+          envs: TELEGRAM_BOT_TOKEN,DEVELOPER_CHAT_ID

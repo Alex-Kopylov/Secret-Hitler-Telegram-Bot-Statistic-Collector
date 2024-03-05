@@ -1,0 +1,11 @@
+version: '3.8' 
+
+services:
+  bot:
+    volumes:
+      - sqlite_data:/database
+
+volumes:
+  sqlite_data:
+
+# Only define services specific to development or production in their respective override files
