@@ -11,7 +11,7 @@ env:
   COMPOSE_PROJECT_NAME: sh_bot_stat_collector
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: [self-hosted]
     steps:
       - name: Checkout repository
@@ -42,6 +42,10 @@ jobs:
             cd ./_work/${{ env.REPO_NAME }}/${{ env.REPO_NAME }}
             docker compose -p sh_bot_stat_collector_${{ env.ENVIRONMENT }} ${{ env.COMPOSE_FILES }} build --no-cache
 
+  deploy:
+    needs: build
+    runs-on: [self-hosted]
+    steps:
       - name: Deploy to server
         uses: appleboy/ssh-action@master
         env:
@@ -59,6 +63,10 @@ jobs:
             docker compose -p ${{ env.COMPOSE_PROJECT_NAME }}_${{ env.ENVIRONMENT }} ${{ env.COMPOSE_FILES }} up -d;
           envs: TELEGRAM_BOT_TOKEN,DEVELOPER_CHAT_ID,SQLITE_DB_FILE_PATH
 
+  deploy-check:
+    needs: deploy
+    runs-on: [self-hosted]
+    steps:
       - name: Docker Compose is up
         uses: appleboy/ssh-action@master
         env:
@@ -80,6 +88,10 @@ jobs:
             done;
           envs: TELEGRAM_BOT_TOKEN,DEVELOPER_CHAT_ID
 
+  notification:
+    needs: deploy-check
+    runs-on: [self-hosted]
+    steps:
       - name: Notify developer
         uses: appleboy/ssh-action@master
         env:
