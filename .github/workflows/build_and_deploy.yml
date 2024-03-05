@@ -55,10 +55,10 @@ jobs:
           key: ${{ secrets.PRIVATE_KEY }}
           script: |
             cd ./_work/${{ env.REPO_NAME }}/${{ env.REPO_NAME }}
-            docker compose -p ${{ env.COMPOSE_PROJECT_NAME }}_${{ env.ENVIRONMENT }} ${{ env.COMPOSE_FILES }} down
-            docker compose -p ${{ env.COMPOSE_PROJECT_NAME }}_${{ env.ENVIRONMENT }} ${{ env.COMPOSE_FILES }} up -d
-            sleep 5 # Allow services to start
+            docker compose -p ${{ env.COMPOSE_PROJECT_NAME }}_${{ env.ENVIRONMENT }} ${{ env.COMPOSE_FILES }} down;
+            docker compose -p ${{ env.COMPOSE_PROJECT_NAME }}_${{ env.ENVIRONMENT }} ${{ env.COMPOSE_FILES }} up -d;
+            sleep 5; # Allow services to start
             if ! docker compose -p ${{ env.COMPOSE_PROJECT_NAME }}_${{ env.ENVIRONMENT }} ${{ env.COMPOSE_FILES }} ps | grep -q 'Up'; then
-              echo "One or more containers are not running as expected."
-              exit 1
+              echo "One or more containers are not running as expected.";
+              exit 1;
           envs: TELEGRAM_BOT_TOKEN,DEVELOPER_CHAT_ID,SQLITE_DB_FILE_PATH
