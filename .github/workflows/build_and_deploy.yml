@@ -43,6 +43,7 @@ jobs:
             docker compose -p sh_bot_stat_collector_${{ env.ENVIRONMENT }} ${{ env.COMPOSE_FILES }} build --no-cache
 
       - name: Deploy to server
+        depends-on: Build container
         uses: appleboy/ssh-action@master
         env:
           DEVELOPER_CHAT_ID: ${{ secrets.DEVELOPER_CHAT_ID }}
@@ -57,8 +58,39 @@ jobs:
             cd ./_work/${{ env.REPO_NAME }}/${{ env.REPO_NAME }}
             docker compose -p ${{ env.COMPOSE_PROJECT_NAME }}_${{ env.ENVIRONMENT }} ${{ env.COMPOSE_FILES }} down;
             docker compose -p ${{ env.COMPOSE_PROJECT_NAME }}_${{ env.ENVIRONMENT }} ${{ env.COMPOSE_FILES }} up -d;
-            sleep 5; # Allow services to start
-            if ! docker compose -p ${{ env.COMPOSE_PROJECT_NAME }}_${{ env.ENVIRONMENT }} ${{ env.COMPOSE_FILES }} ps | grep -q 'Up'; then
-              echo "One or more containers are not running as expected.";
-              exit 1;
           envs: TELEGRAM_BOT_TOKEN,DEVELOPER_CHAT_ID,SQLITE_DB_FILE_PATH
+
+      - name: Docker Compose is up
+        uses: appleboy/ssh-action@master
+        env:
+          DEVELOPER_CHAT_ID: ${{ secrets.DEVELOPER_CHAT_ID }}
+          TELEGRAM_BOT_TOKEN: ${{ env.TELEGRAM_BOT_TOKEN }}
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          script: |
+            sleep 5; # Allow services to start
+            service_name=$(docker compose -p ${{ env.COMPOSE_PROJECT_NAME }}_${{ env.ENVIRONMENT }} ${{ env.COMPOSE_FILES }} ps --services);
+            for service in $service_name; do
+              if ! docker compose -p ${{ env.COMPOSE_PROJECT_NAME }}_${{ env.ENVIRONMENT }} ${{ env.COMPOSE_FILES }} ps | grep -q "$service.* Up"; then
+                echo "$service not running as expected.";
+                exit 1;
+              fi;
+            done;
+          envs: TELEGRAM_BOT_TOKEN,DEVELOPER_CHAT_ID
+
+      - name: Notify developer
+        uses: appleboy/ssh-action@master
+        env:
+          DEVELOPER_CHAT_ID: ${{ secrets.DEVELOPER_CHAT_ID }}
+          TELEGRAM_BOT_TOKEN: ${{ env.TELEGRAM_BOT_TOKEN }}
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          script: |
+            curl -s -X POST https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage -d chat_id=${DEVELOPER_CHAT_ID} -d text="Successfully deployed ${{ github. }} to ${{ env.ENVIRONMENT }} environment"
+          envs: TELEGRAM_BOT_TOKEN,DEVELOPER_CHAT_ID
