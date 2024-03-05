@@ -42,6 +42,7 @@ FROM base-image as production
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
     libffi-dev \
+    libcairo2 \
     python3-cairosvg
 
 COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
