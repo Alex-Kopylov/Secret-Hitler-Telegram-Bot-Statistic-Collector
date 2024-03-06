@@ -141,3 +141,36 @@ async def fetch_poll_results(poll_id: int) -> tuple[PollResult]:
              WHERE poll_id = ?"""
     results = await fetch_all(sql, [poll_id])
     return tuple(PollResult(**result) for result in results)
+
+
+async def fetch_player_answers(username):
+    """
+    Returns table of player with given username results grouped by his answers
+    
+    Parameters:
+    -----------
+    cur : sqlite3 cursor
+        Cursor to the given database.
+        
+    username : string from table Players.username
+        Username of given player.
+    
+    Returns:
+    --------
+    res : dict
+        Keys are answers, values are count numbers
+    """
+    query = f"""SELECT SUM(CASE WHEN records.role = 'HC' THEN 1 ELSE 0 END) AS HC, 
+                       SUM(CASE WHEN records.role = 'HD' THEN 1 ELSE 0 END) AS HD, 
+                       SUM(CASE WHEN records.role = 'HL' THEN 1 ELSE 0 END) AS HL, 
+                       SUM(CASE WHEN records.role = 'HW' THEN 1 ELSE 0 END) AS HW, 
+                       SUM(CASE WHEN records.role = 'FL' THEN 1 ELSE 0 END) AS FL, 
+                       SUM(CASE WHEN records.role = 'LL' THEN 1 ELSE 0 END) AS LL, 
+                       SUM(CASE WHEN records.role = 'LW' THEN 1 ELSE 0 END) AS LW, 
+                       SUM(CASE WHEN records.role = 'FW' THEN 1 ELSE 0 END) AS FW
+                FROM Records 
+                INNER JOIN Players ON Players.id = Records.player_id
+                WHERE Players.username = ?
+                GROUP BY Players.id;"""
+    res = await fetch_one(query, [username])
+    return res
