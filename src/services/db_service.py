@@ -168,9 +168,9 @@ async def fetch_player_answers(username):
                        SUM(CASE WHEN records.role = 'LL' THEN 1 ELSE 0 END) AS LL, 
                        SUM(CASE WHEN records.role = 'LW' THEN 1 ELSE 0 END) AS LW, 
                        SUM(CASE WHEN records.role = 'FW' THEN 1 ELSE 0 END) AS FW
-                FROM Records 
-                INNER JOIN Players ON Players.id = Records.player_id
-                WHERE Players.username = ?
-                GROUP BY Players.id;"""
+                FROM records
+                INNER JOIN players ON players.id = records.player_id
+                WHERE players.username = ?
+                GROUP BY players.id;"""
     res = await fetch_one(query, [username])
     return res
