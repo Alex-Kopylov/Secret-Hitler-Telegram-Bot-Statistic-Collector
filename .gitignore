@@ -1,6 +1,7 @@
 __pycache__/
 *.ipynb
 example.db
+db.sqlite
 *.py[cod]
 *$py.class
 *.so
