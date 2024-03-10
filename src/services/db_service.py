@@ -199,7 +199,7 @@ async def fetch_players_stats(order='DESC', top=None):
                  HL (Hitler loses), 
                  winrate
     """
-    query = f"""SELECT username,
+    query = f"""SELECT username, full_name, 
             SUM(CASE WHEN role = 'LW' THEN 1 ELSE 0 END) AS LW,
             SUM(CASE WHEN role = 'FW' THEN 1 ELSE 0 END) AS FW,
             SUM(CASE WHEN role IN ('HW', 'HC') THEN 1 ELSE 0 END) AS HW,
@@ -259,7 +259,7 @@ async def fetch_connection_stats(username, order='DESC', top=None, which='teamma
                 CASE WHEN records.role IN ('FW', 'LW', 'HC', 'HW') THEN 'Win' ELSE 'Lose' END AS result
                 FROM records INNER JOIN players ON players.id = records.player_id 
                 WHERE players.username = ?)
-                SElECT players.username, 
+                SElECT players.username, players.full_name, 
                 SUM(CASE WHEN team = 'Liberal' AND result = 'Win' THEN 1 ELSE 0 END) AS LW, 
                 SUM(CASE WHEN team = 'Fascist' AND result = 'Win' THEN 1 ELSE 0 END) AS FW, 
                 SUM(CASE WHEN team = 'Liberal' AND result = 'Lose' THEN 1 ELSE 0 END) AS LL, 
