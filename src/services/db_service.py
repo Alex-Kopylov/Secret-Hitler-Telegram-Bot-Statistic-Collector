@@ -125,6 +125,25 @@ async def delete_poll_result(poll_id: int, user_id: int) -> None:
         )
 
 
+async def fetch_user(username=None, id=None, first_name=None, full_name=None, last_name=None):
+    # returns full player info by given info
+    conditions = []
+    if not id is None:
+        conditions.append(f'id = {id.__repr__()}')
+    if not username is None:
+        conditions.append(f'username = {username.__repr__()}')
+    if not first_name is None:
+        conditions.append(f'first_name = {first_name.__repr__()}')
+    if not last_name is None:
+        conditions.append(f'last_name = {last_name.__repr__()}')
+    if not full_name is None:
+        conditions.append(f'full_name = {full_name.__repr__()}')
+    query = f"""SELECT * FROM players
+                WHERE {' AND '.join(conditions)};"""
+    result = await fetch_one(query, [])
+    return result
+        
+        
 async def fetch_poll_data(poll_id: int) -> Poll | None:
     sql = """SELECT id, message_id, chat_id, chat_name, creator_id, creator_username
              FROM polls
@@ -176,7 +195,7 @@ async def fetch_player_answers(username):
     return res
 
 
-async def fetch_players_stats(order='DESC', top=None):
+async def fetch_players_stats(order='DESC', mingames=None, top=None):
     """
     Returns table containing number of wins and loses for each role and winrate
     
@@ -199,17 +218,23 @@ async def fetch_players_stats(order='DESC', top=None):
                  HL (Hitler loses), 
                  winrate
     """
-    query = f"""SELECT username, full_name, 
-            SUM(CASE WHEN role = 'LW' THEN 1 ELSE 0 END) AS LW,
-            SUM(CASE WHEN role = 'FW' THEN 1 ELSE 0 END) AS FW,
-            SUM(CASE WHEN role IN ('HW', 'HC') THEN 1 ELSE 0 END) AS HW,
-            SUM(CASE WHEN role = 'LL' THEN 1 ELSE 0 END) AS LL,
-            SUM(CASE WHEN role = 'FL' THEN 1 ELSE 0 END) AS FL, 
-            SUM(CASE WHEN role IN ('HL', 'HD') THEN 1 ELSE 0 END) AS HL,
-            AVG(CASE WHEN role IN ('LW', 'FW', 'HW', 'HC') THEN 1 ELSE 0 END) AS winrate
+    if mingames is None:
+        condition = ""
+    else:
+        condition = f"HAVING games >= {mingames}"
+    query = f"""SELECT players.id, players.username, players.full_name, 
+            SUM(CASE WHEN records.role = 'LW' THEN 1 ELSE 0 END) AS LW,
+            SUM(CASE WHEN records.role = 'FW' THEN 1 ELSE 0 END) AS FW,
+            SUM(CASE WHEN records.role IN ('HW', 'HC') THEN 1 ELSE 0 END) AS HW,
+            SUM(CASE WHEN records.role = 'LL' THEN 1 ELSE 0 END) AS LL,
+            SUM(CASE WHEN records.role = 'FL' THEN 1 ELSE 0 END) AS FL, 
+            SUM(CASE WHEN records.role IN ('HL', 'HD') THEN 1 ELSE 0 END) AS HL,
+            COUNT(records.role) AS games,
+            AVG(CASE WHEN records.role IN ('LW', 'FW', 'HW', 'HC') THEN 1 ELSE 0 END) AS winrate
             FROM records
             INNER JOIN players ON players.id = records.player_id
-            GROUP BY player_id ORDER BY winrate {order};"""
+            GROUP BY player_id {condition}
+            ORDER BY winrate {order};"""
     if top is not None:
         query = query[:-1] + f'\nLIMIT {top};'
     res = await fetch_all(query, [])
