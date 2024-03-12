@@ -1,3 +1,4 @@
+import io
 import asyncio
 import pandas as pd
 
@@ -6,7 +7,7 @@ from matplotlib import image
 from matplotlib.offsetbox import (OffsetImage, AnnotationBbox)#The OffsetBox is a simple container artist.
 from telegram.ext import ContextTypes
 from src.services.db_service import fetch_user, fetch_player_answers, fetch_players_stats, fetch_connection_stats
-from src.services.draw_result_image import get_user_profile_photo
+from src.services.draw_result_image import get_user_profile_photo, svg2png
 
 
 async def draw_user_winrate_bins(username, ax=None, return_bins=False):
@@ -44,8 +45,8 @@ async def draw_user_winrate(username, outcome=None, context=ContextTypes.DEFAULT
         Username of given player.
     
     outcome: str
-        Outcome svg-file name
-        Just show the figure, if that's None
+        Outcome file name
+        Returns svg-string if this is None
     
     context : telegram.ext.CallbackContext
     """
@@ -74,7 +75,10 @@ async def draw_user_winrate(username, outcome=None, context=ContextTypes.DEFAULT
     ab = AnnotationBbox(imagebox, (ab_posx, ab_posy), frameon = True)
     ax.add_artist(ab)
 
-    if outcome is None:
-        plt.show(fig)
+    if not (outcome is None):
+        fig.savefig(outcome)
     else:
-        fig.savefig(outcome, format="svg")
+        svg = io.StringIO()
+        fig.savefig(svg, format='svg')
+        svg = svg.getvalue()
+        return svg2png(svg)
