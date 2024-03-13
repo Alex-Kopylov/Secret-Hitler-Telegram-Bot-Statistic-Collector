@@ -13,7 +13,23 @@ from src.services.db_service import (
     fetch_poll_results,
 )
 from src.services.draw_result_image import draw_result_image
-from src.utils import message_is_poll, is_message_from_group_chat
+from src.utils import message_is_poll, is_message_from_group_chat, try_to_delete_message
+
+
+async def send_result(context, update, game: Game, records: list[Record]):
+    try:
+        await context.bot.send_photo(
+            chat_id=game.chat_id,
+            photo=await draw_result_image(
+                records=records, result=game.results, update=update, context=context
+            ),
+            caption=f"The Game has been saved! Result: {game.results}",
+            disable_notification=True,
+        )
+    except Exception as e:
+        await update.effective_message.reply_text(
+            f"Result: {game.results}\nP.S. this bot can send you a result image, allow it to send photos. {e}"
+        )
 
 
 async def _pass_checks(
@@ -93,16 +109,15 @@ async def save(
         await asyncio.gather(
             save_game(game),
             *(save_record(record) for record in records),
-            context.bot.delete_message(chat_id=game.chat_id, message_id=game.poll_id),
-            update.effective_message.delete(),
-            context.bot.send_photo(
-                chat_id=game.chat_id,
-                photo=await draw_result_image(
-                    records=records, result=game.results, update=update, context=context
-                ),
-                caption="The Game has been saved!",
-                disable_notification=True,
+            try_to_delete_message(
+                context=context, chat_id=game.chat_id, message_id=game.poll_id
             ),
+            try_to_delete_message(
+                context=context,
+                chat_id=game.chat_id,
+                message_id=update.effective_message.id,
+            ),
+            send_result(context=context, update=update, game=game, records=records),
         )
     else:
         await update.effective_message.reply_text(

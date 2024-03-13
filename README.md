@@ -12,7 +12,7 @@ This Telegram bot is help you to gather statistics about your games.
 
 
 ## How to use
-1. Add the [Secret Hitler Statistics Bot](t.me/SHStatBot) to your Telegram group chat
+1. Add the [Secret Hitler Statistics Bot](https://t.me/sh_statistic_collector_bot) to your Telegram group chat
 2. Start a new game with the `/game` command to record results of the game
 3. Ask players to vote
 4. Use the `/save` command to save the game results by replaying the game in the chat. Be aware that only the game creator can save the game.

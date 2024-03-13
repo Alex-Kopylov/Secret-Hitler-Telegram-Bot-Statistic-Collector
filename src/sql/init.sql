@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS records (
     player_id INTEGER NOT NULL,
     playroom_id INTEGER, -- Telegram chat id
     game_id INTEGER NOT NULL, -- Telegram poll id
-    role TEXT NOT NULL, -- [HC, HD, HL, FL, LL, LW, FW] # TODO: to int category
+    role TEXT NOT NULL, -- [HC, DH, HL, FL, LL, LW, FW] # TODO: to int category
     FOREIGN KEY (player_id) REFERENCES players(id),
     FOREIGN KEY (creator_id) REFERENCES players(id),
     FOREIGN KEY (game_id) REFERENCES games(id),
