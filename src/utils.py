@@ -16,3 +16,4 @@ async def try_to_delete_message(context, chat_id, message_id):
         await context.bot.delete_message(chat_id=chat_id, message_id=message_id)
     except Exception as e:
         return
+

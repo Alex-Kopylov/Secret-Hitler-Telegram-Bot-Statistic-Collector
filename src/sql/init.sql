@@ -1,7 +1,7 @@
 -- Create table for players
 CREATE TABLE IF NOT EXISTS players (
     id INTEGER PRIMARY KEY NOT NULL UNIQUE, -- Telegram user id
-    username TEXT NOT NULL, -- Telegram username
+    username TEXT, -- Telegram username
     first_name TEXT, -- Telegram first name
     full_name TEXT, -- Telegram full name
     last_name TEXT, -- Telegram last name
@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS polls (
     chat_id INTEGER NOT NULL, -- Corresponding playroom id from the playrooms table
     chat_name TEXT NOT NULL, -- Name of the chat from the playroom
     creator_id INTEGER NOT NULL, -- Id of the player who created the poll
-    creator_username TEXT NOT NULL, -- Username of the player who created the poll
+    creator_username TEXT, -- Username of the player who created the poll
     creation_time DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
     FOREIGN KEY (message_id) REFERENCES games(id),
     FOREIGN KEY (chat_id) REFERENCES playrooms(id),
