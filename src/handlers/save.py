@@ -62,8 +62,9 @@ async def _pass_checks(
         return False
 
     if update.effective_user.id != poll_data.creator_id:
+        user = msg_with_poll.from_user.username if msg_with_poll.from_user.username else msg_with_poll.from_user.first_name
         await update.effective_message.reply_text(
-            f"You are not the creator of the game! Only @{poll_data['creator_username']} can stop this poll."
+            f"You are not the creator of the game! Only @{user} can stop this poll."
         )
         return False
 
