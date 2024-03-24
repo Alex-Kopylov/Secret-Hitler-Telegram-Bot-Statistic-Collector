@@ -3,6 +3,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Tuple
 from pathlib import Path
 
+from telegram import BotCommand
+
 
 class AppConfig(BaseSettings):
     # Define each configuration item with type annotations
@@ -41,6 +43,17 @@ class AppConfig(BaseSettings):
     fascist_color: str = "#E66443"
     fascist_color_stroke: str = "#7A1E16"
     stroke_size: str = "12"  # TODO: pydantic int setter, str getter
+
+    commands: list[BotCommand] = Field(
+        [
+            BotCommand("start", "Start using bot"),
+            BotCommand("help", "Display help"),
+            BotCommand("game", "Start the game in group chat"),
+            BotCommand(
+                "save", "Save the game by replying to poll created by /game command"
+            ),
+        ]
+    )
 
     class Config:
         # Optional: control the source of environment variables

@@ -1,6 +1,6 @@
-from typing import Literal
+from typing import Literal, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class Poll(BaseModel):
@@ -9,4 +9,4 @@ class Poll(BaseModel):
     chat_id: int
     chat_name: str
     creator_id: int
-    creator_username: str
+    creator_username: Optional[str | None] = Field(None)

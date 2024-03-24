@@ -37,5 +37,5 @@ class Game(BaseModel):
         ):
             return "FW"
         raise ValueError(
-            f"Invalid results '{v}' for Game. Results must be one of {config.GAME_POLL_OUTCOMES}"
+            f"Invalid results '{results}' for Game. Results must be one of {config.GAME_POLL_OUTCOMES}"
         )
