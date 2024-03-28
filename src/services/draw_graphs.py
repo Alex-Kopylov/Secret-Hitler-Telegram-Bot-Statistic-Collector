@@ -21,6 +21,10 @@ async def draw_user_winrate_bins(username, ax=None, return_bins=False):
     
     ax : matplotlib axes object, default None
         An axes of the current figure
+        
+    Returns:
+    --------
+        bins : pd.DataFrame
     """
     info = await fetch_player_answers(username)
     bins = pd.DataFrame([[info['LW'], info['LL']], 

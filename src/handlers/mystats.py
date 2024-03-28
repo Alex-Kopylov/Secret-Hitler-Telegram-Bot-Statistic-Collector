@@ -12,7 +12,7 @@ async def mystats(
 ) -> None:
     # Draws personal stats of asking user
     username = update.effective_user.username
-    chat_id =  update.my_chat_member
+    chat_id = update.effective_chat.id
     await context.bot.send_photo(chat_id=chat_id,
                                  photo=await draw_user_winrate(username), 
                                  disable_notification=True)
