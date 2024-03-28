@@ -10,14 +10,14 @@ from src.services.db_service import fetch_user, fetch_player_answers, fetch_play
 from src.services.draw_result_image import get_user_profile_photo, svg2png
 
 
-async def draw_user_winrate_bins(username, ax=None, return_bins=False):
+async def draw_user_winrate_bins(user_id, ax=None, return_bins=False):
     """
     Plots a winrate statistics for given player.
     
     Parameters:
     -----------
-    username : string from table Players.username
-        Username of given player.
+    user_id : int from table Players.id
+        Id of a given player.
     
     ax : matplotlib axes object, default None
         An axes of the current figure
@@ -26,7 +26,7 @@ async def draw_user_winrate_bins(username, ax=None, return_bins=False):
     --------
         bins : pd.DataFrame
     """
-    info = await fetch_player_answers(username)
+    info = await fetch_player_answers(user_id)
     bins = pd.DataFrame([[info['LW'], info['LL']], 
                          [info['FW'], info['FL']], 
                          [info['HC'] + info['HW'], info['HD'] + info['HL']]], 
@@ -39,14 +39,14 @@ async def draw_user_winrate_bins(username, ax=None, return_bins=False):
     
     
     
-async def draw_user_winrate(username, outcome=None, context=ContextTypes.DEFAULT_TYPE):
+async def draw_user_winrate(user_id, outcome=None, context=ContextTypes.DEFAULT_TYPE):
     """
     Draw a winrate statistics for given player and saves this as svg
     
     Parameters:
     -----------
-    username : string from table Players.username
-        Username of given player.
+    user_id : int from table Players.id
+        Id of a given player.
     
     outcome: str
         Outcome file name
@@ -54,7 +54,8 @@ async def draw_user_winrate(username, outcome=None, context=ContextTypes.DEFAULT
     
     context : telegram.ext.CallbackContext
     """
-    user = await fetch_user(username=username)
+    user = await fetch_user(id=user_id)
+    print(user)
     
     fig, ax = plt.subplots(1, 1)
     fig.set_figwidth(8)
@@ -62,7 +63,7 @@ async def draw_user_winrate(username, outcome=None, context=ContextTypes.DEFAULT
     fig.suptitle(user['full_name'])
     
     # Define a logo (an avatar) position
-    bins = await draw_user_winrate_bins(username, ax=ax, return_bins=True)
+    bins = await draw_user_winrate_bins(user_id, ax=ax, return_bins=True)
     heights = bins.sum(axis=1)
     if heights['Wins'] < 0.75*heights['Loses']:
         ab_posx = 0

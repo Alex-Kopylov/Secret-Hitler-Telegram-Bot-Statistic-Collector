@@ -162,7 +162,7 @@ async def fetch_poll_results(poll_id: int) -> tuple[PollResult]:
     return tuple(PollResult(**result) for result in results)
 
 
-async def fetch_player_answers(username):
+async def fetch_player_answers(user_id):
     """
     Returns table of player with given username results grouped by his answers
     
@@ -170,9 +170,9 @@ async def fetch_player_answers(username):
     -----------
     cur : sqlite3 cursor
         Cursor to the given database.
-        
-    username : string from table Players.username
-        Username of given player.
+    
+    user_id : int
+        Id of a given player.
     
     Returns:
     --------
@@ -188,10 +188,8 @@ async def fetch_player_answers(username):
                        SUM(CASE WHEN records.role = 'LW' THEN 1 ELSE 0 END) AS LW, 
                        SUM(CASE WHEN records.role = 'FW' THEN 1 ELSE 0 END) AS FW
                 FROM records
-                INNER JOIN players ON players.id = records.player_id
-                WHERE players.username = ?
-                GROUP BY players.id;"""
-    res = await fetch_one(query, [username])
+                WHERE records.player_id = ?;"""
+    res = await fetch_one(query, [user_id])
     return res
 
 
