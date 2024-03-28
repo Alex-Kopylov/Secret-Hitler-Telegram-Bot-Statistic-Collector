@@ -11,6 +11,7 @@ def get_handlers() -> tuple:
         CommandHandler("help", handlers.help),
         CommandHandler("game", handlers.game),
         CommandHandler("save", handlers.save),
+        CommandHandler("mystats", handlers.mystats),
         # Poll answer handler
         PollAnswerHandler(poll_callback_receiver),
     )
