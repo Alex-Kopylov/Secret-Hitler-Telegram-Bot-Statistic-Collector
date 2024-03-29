@@ -14,6 +14,6 @@ async def mystats(
     user_id = update.effective_user.id
     chat_id = update.effective_chat.id
     await context.bot.send_photo(chat_id=chat_id,
-                                 photo=await draw_user_winrate(user_id), 
+                                 photo=await draw_user_winrate(user_id, context=context), 
                                  disable_notification=True)
     #await update.effective_message.delete()

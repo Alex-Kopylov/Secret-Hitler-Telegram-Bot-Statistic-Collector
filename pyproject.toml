@@ -15,6 +15,7 @@ cairosvg = "^2.7.1"
 pydantic-settings = "^2.2.1"
 pandas = "^1.5.3"
 matplotlib = "^3.7.4"
+scikit-image = "^0.22.0"
 
 [build-system]
 requires = ["poetry-core"]
