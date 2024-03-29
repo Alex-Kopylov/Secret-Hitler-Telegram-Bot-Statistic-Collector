@@ -1,4 +1,5 @@
 import io
+import skimage
 import asyncio
 import pandas as pd
 
@@ -55,7 +56,6 @@ async def draw_user_winrate(user_id, outcome=None, context=ContextTypes.DEFAULT_
     context : telegram.ext.CallbackContext
     """
     user = await fetch_user(id=user_id)
-    print(user)
     
     fig, ax = plt.subplots(1, 1)
     fig.set_figwidth(8)
@@ -65,18 +65,19 @@ async def draw_user_winrate(user_id, outcome=None, context=ContextTypes.DEFAULT_
     # Define a logo (an avatar) position
     bins = await draw_user_winrate_bins(user_id, ax=ax, return_bins=True)
     heights = bins.sum(axis=1)
-    if heights['Wins'] < 0.75*heights['Loses']:
+    if heights['Wins'] < 0.66*heights['Loses']:
         ab_posx = 0
-    elif heights['Loses'] < 0.75*heights['Wins']:
+    elif heights['Loses'] < 0.66*heights['Wins']:
         ab_posx = 1
     else:
         ab_posx = 0.5
     ab_posy = 0.85*heights.max()
     
     # Set a logo (an avatar)
-    file = await get_user_profile_photo(context=context, player_id=user['id'])
-    logo = image.imread(file)
-    imagebox = OffsetImage(logo, zoom = 0.25)
+    photo_path = await get_user_profile_photo(context=context, player_id=user_id)
+    logo = skimage.io.imread(photo_path)
+    zoom = 90/logo.shape[1]
+    imagebox = OffsetImage(logo, zoom=zoom)
     ab = AnnotationBbox(imagebox, (ab_posx, ab_posy), frameon = True)
     ax.add_artist(ab)
 
