@@ -239,6 +239,124 @@ async def fetch_players_stats(order='DESC', mingames=None, top=None):
     return res
 
     
+    
+async def fetch_result_distribution(playroom_id=None):
+    # returns 
+    if playroom_id is None:
+        condition = ''
+    else:
+        condition = f'WHERE playroom_id = {playroom_id}'
+    query = f"""WITH roles_in_games(Games, FW, LL, LW, FL, HW, HL, CH, DH) AS 
+                (SELECT 1 AS Games,
+                        SUM(CASE WHEN role = 'FW' THEN 1 ELSE 0 END) > 0 AS FW, 
+                        SUM(CASE WHEN role = 'LL' THEN 1 ELSE 0 END) > 0 AS LL, 
+                        SUM(CASE WHEN role = 'LW' THEN 1 ELSE 0 END) > 0 AS LW, 
+                        SUM(CASE WHEN role = 'FL' THEN 1 ELSE 0 END) > 0 AS FL, 
+                        SUM(CASE WHEN role = 'HW' THEN 1 ELSE 0 END) > 0 AS HW, 
+                        SUM(CASE WHEN role = 'HL' THEN 1 ELSE 0 END) > 0 AS HL, 
+                        SUM(CASE WHEN role = 'CH' THEN 1 ELSE 0 END) > 0 AS CH, 
+                        SUM(CASE WHEN role = 'DH' THEN 1 ELSE 0 END) > 0 AS DH
+                FROM records
+                {condition}
+                GROUP BY game_id)
+                SELECT SUM(Games) as Games,
+                       SUM(FW) AS FW,
+                       SUM(LL) AS LL,
+                       SUM(LW) AS LW,
+                       SUM(FL) AS FL,
+                       SUM(HW) AS HW,
+                       SUM(HL) AS HL,
+                       SUM(CH) AS CH,
+                       SUM(DH) AS DH
+                FROM roles_in_games;
+                """
+    result = await fetch_one(query, [])
+    return result
+
+
+async def get_answer_coeffs(playroom_id=None):
+    # calculate the coeffs for rating 
+    d = await fetch_result_distribution(playroom_id)
+    coeffs = {'FW' : 0.5*d['Games']/d['FW'], 
+              'LW' : 0.5*d['Games']/d['LW'], 
+              'HW' : 0.5*d['Games']/d['HW'], 
+              'CH' : 0.5*d['Games']/d['CH'], 
+              'FL' : -0.5*d['Games']/d['FL'], 
+              'LL' : -0.5*d['Games']/d['LL'], 
+              'HL' : -0.5*d['Games']/d['HL'], 
+              'DH' : -0.5*d['Games']/d['DH']
+    }
+    return coeffs
+
+
+async def get_players_rating(playroom_id=None, order='DESC', mingames=None, top=None):
+    """
+    Returns table containing number of wins and loses for each role and winrate
+    
+    Parameters:
+    -----------
+    playroom_id : int or None
+    
+    order : str values 'DESC' or 'ASC'
+    
+    top : uint or None
+        function returns top number of results, if that's not None  
+    
+    Retuens:
+    --------
+    res : DataFrame
+        Columns: username, 
+                 LW (liberal wins), 
+                 FW (fascist wins), 
+                 HW (Hitler wins), 
+                 LL (liberal loses), 
+                 FL (fascist loses), 
+                 HL (Hitler loses), 
+                 winrate
+    """
+    answer_coeffs = await get_answer_coeffs(playroom_id=playroom_id)
+    
+    if playroom_id is None: condition = ''
+    else: condition = f'WHERE playroom_id = {playroom_id}'
+    
+    if mingames is None: having = ""
+    else: having = f"HAVING games >= {mingames}"
+    
+    query = f"""
+            SELECT player_id, players.username, players.full_name, 
+            AVG(CASE WHEN role IN ('FW', 'LW', 'HW', 'CH') THEN 1 ELSE 0 END) AS winrate, 
+            COUNT(role) AS games,
+            SUM(CASE WHEN role = 'FW' THEN {answer_coeffs['FW']}
+                     WHEN role = 'LW' THEN {answer_coeffs['LW']}
+                     WHEN role = 'HW' THEN {answer_coeffs['HW']}
+                     WHEN role = 'CH' THEN {answer_coeffs['CH']}
+                     WHEN role = 'FL' THEN {answer_coeffs['FL']}
+                     WHEN role = 'LL' THEN {answer_coeffs['LL']}
+                     WHEN role = 'HL' THEN {answer_coeffs['HL']}
+                     WHEN role = 'DH' THEN {answer_coeffs['DH']} END) AS rating, 
+            SUM(CASE WHEN records.role = 'LW' THEN 1 ELSE 0 END) AS LW,
+            SUM(CASE WHEN records.role = 'FW' THEN 1 ELSE 0 END) AS FW,
+            SUM(CASE WHEN records.role IN ('HW', 'HC') THEN 1 ELSE 0 END) AS HW,
+            SUM(CASE WHEN records.role = 'LL' THEN 1 ELSE 0 END) AS LL,
+            SUM(CASE WHEN records.role = 'FL' THEN 1 ELSE 0 END) AS FL, 
+            SUM(CASE WHEN records.role IN ('HL', 'HD') THEN 1 ELSE 0 END) AS HL
+            FROM records
+            INNER JOIN players ON players.id = records.player_id
+            {condition}
+            GROUP BY player_id {having}
+            ORDER BY rating {order}
+    """
+    if top is not None:
+        query = query[:-1] + f'\nLIMIT {top};'
+    result = await fetch_all(query, [])
+    return result
+    
+    
+    
+    
+    
+    
+    
 async def fetch_connection_stats(username, order='DESC', top=None, which='teammate'):
     """
     Returns table containing number of wins and loses for each role and winrate
