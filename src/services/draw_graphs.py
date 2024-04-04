@@ -40,7 +40,8 @@ async def draw_user_winrate_bins(user_id, ax=None, return_bins=False):
     
     
     
-async def draw_user_winrate(user_id, outcome=None, context=ContextTypes.DEFAULT_TYPE):
+async def draw_user_winrate(user_id, outcome=None, context=ContextTypes.DEFAULT_TYPE, 
+                            border_logo_height=0.66, logo_size=90):
     """
     Draw a winrate statistics for given player and saves this as svg
     
@@ -54,37 +55,48 @@ async def draw_user_winrate(user_id, outcome=None, context=ContextTypes.DEFAULT_
         Returns svg-string if this is None
     
     context : telegram.ext.CallbackContext
+    
+    border_logo_height : float
+        That's possible to put user photo over the bar if bar height is that size
+        
+    logo_szie : int
+        The size of user photo
     """
-    user = await fetch_user(id=user_id)
-    
-    fig, ax = plt.subplots(1, 1)
-    fig.set_figwidth(8)
-    fig.set_figheight(6)
-    fig.suptitle(user['full_name'])
-    
-    # Define a logo (an avatar) position
-    bins = await draw_user_winrate_bins(user_id, ax=ax, return_bins=True)
-    heights = bins.sum(axis=1)
-    if heights['Wins'] < 0.66*heights['Loses']:
-        ab_posx = 0
-    elif heights['Loses'] < 0.66*heights['Wins']:
-        ab_posx = 1
-    else:
-        ab_posx = 0.5
-    ab_posy = 0.85*heights.max()
-    
-    # Set a logo (an avatar)
-    photo_path = await get_user_profile_photo(context=context, player_id=user_id)
-    logo = skimage.io.imread(photo_path)
-    zoom = 90/logo.shape[1]
-    imagebox = OffsetImage(logo, zoom=zoom)
-    ab = AnnotationBbox(imagebox, (ab_posx, ab_posy), frameon = True)
-    ax.add_artist(ab)
+    try:
+        user = await fetch_user(id=user_id)
 
-    if not (outcome is None):
-        fig.savefig(outcome)
-    else:
-        svg = io.StringIO()
-        fig.savefig(svg, format='svg')
-        svg = svg.getvalue()
-        return svg2png(svg)
+        fig, ax = plt.subplots(1, 1)
+        fig.set_figwidth(8)
+        fig.set_figheight(6)
+        fig.suptitle(user['full_name'])
+
+        # Define a logo (an avatar) position
+        bins = await draw_user_winrate_bins(user_id, ax=ax, return_bins=True)
+        heights = bins.sum(axis=1)
+        if heights['Wins'] < border_logo_height*heights['Loses']:
+            ab_posx = 0
+        elif heights['Loses'] < border_logo_height*heights['Wins']:
+            ab_posx = 1
+        else:
+            ab_posx = 0.5
+        ab_posy = 0.85*heights.max()
+
+        # Set a logo (an avatar)
+        photo_path = await get_user_profile_photo(context=context, player_id=user_id)
+        logo = skimage.io.imread(photo_path)
+        zoom = logo_size/logo.shape[1]
+        imagebox = OffsetImage(logo, zoom=zoom)
+        ab = AnnotationBbox(imagebox, (ab_posx, ab_posy), frameon = True)
+        ax.add_artist(ab)
+
+        if not (outcome is None):
+            fig.savefig(outcome)
+        else:
+            svg = io.StringIO()
+            fig.savefig(svg, format='svg')
+            svg = svg.getvalue()
+            return svg2png(svg)
+    except Exception as e:
+        # Log the error message
+        print(f"Failed to draw winrate statistics for {username}: {str(e)}")
+        # Optionally, return or handle the error further
