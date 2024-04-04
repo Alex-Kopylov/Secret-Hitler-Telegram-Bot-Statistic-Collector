@@ -27,7 +27,7 @@ async def game(
     try:
         message = await context.bot.send_poll(
             update.effective_chat.id,
-            f"@{update.effective_user.username} wants you to record the last game. Please choose your outcome:",
+            f"@{update.effective_user.username} wants you to record the game. Please choose your outcome:",
             questions,
             is_anonymous=False,
             allows_multiple_answers=False,
