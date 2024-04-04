@@ -15,7 +15,9 @@ class Player(BaseModel):
     @field_validator("is_bot", mode="after")
     @classmethod
     def validate_bot(cls, v: bool) -> str:
-        return "TRUE" if v else "FALSE"  # sqlite3 does not support a boolean type # todo maybe use 1 and 0
+        return (
+            "TRUE" if v else "FALSE"
+        )  # sqlite3 does not support a boolean type # todo maybe use 1 and 0
 
     @field_validator("username", mode="after")
     @classmethod
