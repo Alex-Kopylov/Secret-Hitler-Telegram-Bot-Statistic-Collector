@@ -11,7 +11,7 @@ class Game(BaseModel):
     chat_id: int
     results: tuple[
         PollResult, ...
-    ]  # Literal["Hitler Canceler", "Fascist Law", "Hitler Death", "Liberal Law"]
+    ]  # Literal["Hitler Chancellor", "Fascist Law", "Hitler Death", "Liberal Law"]
     creator_id: int
 
     @field_validator("results", mode="after")
@@ -20,7 +20,7 @@ class Game(BaseModel):
         cls, results: tuple[PollResult]
     ) -> Literal["CH", "DH", "FW", "LW"]:
         outcomes = set(outcome.get_answer_as_text() for outcome in results)
-        if "I'm Canceler Hitler" in outcomes:
+        if "I'm Chancellor Hitler" in outcomes:
             return "CH"
         if "I'm Dead Hitler" in outcomes:
             return "DH"
@@ -37,5 +37,5 @@ class Game(BaseModel):
         ):
             return "FW"
         raise ValueError(
-            f"Invalid results '{v}' for Game. Results must be one of {config.GAME_POLL_OUTCOMES}"
+            f"Invalid results '{results}' for Game. Results must be one of {config.GAME_POLL_OUTCOMES}"
         )

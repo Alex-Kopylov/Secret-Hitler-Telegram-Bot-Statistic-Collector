@@ -18,7 +18,7 @@ class Record(BaseModel):
         cls, v: str
     ) -> Optional[Literal["CH", "DH", "HW", "HL", "LW", "LL", "FW", "FL"] | None]:
         match v:
-            case "I'm Canceler Hitler":
+            case "I'm Chancellor Hitler":
                 return "CH"
             case "I'm Dead Hitler":
                 return "DH"

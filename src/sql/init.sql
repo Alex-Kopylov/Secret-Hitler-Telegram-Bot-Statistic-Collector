@@ -1,7 +1,7 @@
 -- Create table for players
 CREATE TABLE IF NOT EXISTS players (
     id INTEGER PRIMARY KEY NOT NULL UNIQUE, -- Telegram user id
-    username TEXT NOT NULL, -- Telegram username
+    username TEXT, -- Telegram username
     first_name TEXT, -- Telegram first name
     full_name TEXT, -- Telegram full name
     last_name TEXT, -- Telegram last name
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS games (
     playroom_id INTEGER, -- Telegram chat id
     creator_id INTEGER NOT NULL, -- Telegram user id who created the game
     time DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    result TEXT, -- ["Hitler Canceler", "Fascist Law", "Hitler Death", "Liberal Law"]
+    result TEXT, -- ["Hitler Chancellor", "Fascist Law", "Hitler Death", "Liberal Law"]
     FOREIGN KEY (creator_id) REFERENCES players(id),
     FOREIGN KEY (playroom_id) REFERENCES playrooms(id)
 );
@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS records (
     player_id INTEGER NOT NULL,
     playroom_id INTEGER, -- Telegram chat id
     game_id INTEGER NOT NULL, -- Telegram poll id
-    role TEXT NOT NULL, -- [HC, HD, HL, FL, LL, LW, FW] # TODO: to int category
+    role TEXT NOT NULL, -- [HC, DH, HL, FL, LL, LW, FW] # TODO: to int category
     FOREIGN KEY (player_id) REFERENCES players(id),
     FOREIGN KEY (creator_id) REFERENCES players(id),
     FOREIGN KEY (game_id) REFERENCES games(id),
@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS polls (
     chat_id INTEGER NOT NULL, -- Corresponding playroom id from the playrooms table
     chat_name TEXT NOT NULL, -- Name of the chat from the playroom
     creator_id INTEGER NOT NULL, -- Id of the player who created the poll
-    creator_username TEXT NOT NULL, -- Username of the player who created the poll
+    creator_username TEXT, -- Username of the player who created the poll
     creation_time DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
     FOREIGN KEY (message_id) REFERENCES games(id),
     FOREIGN KEY (chat_id) REFERENCES playrooms(id),
