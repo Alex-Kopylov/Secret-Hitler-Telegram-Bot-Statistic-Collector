@@ -13,7 +13,11 @@ async def mystats(
     # Draws personal stats of asking user
     user_id = update.effective_user.id
     chat_id = update.effective_chat.id
-    await context.bot.send_photo(chat_id=chat_id,
-                                 photo=await draw_user_winrate(user_id, context=context), 
-                                 disable_notification=True)
-    #await update.effective_message.delete()
+    try:
+        await context.bot.send_photo(chat_id=chat_id,
+                                     photo=await draw_user_winrate(user_id, context=context), 
+                                     disable_notification=True)
+        #await update.effective_message.delete()
+    except TelegramError as e:
+        logging.error(f"Failed to send photo: {e}")
+        await context.bot.send_message(chat_id=chat_id, text="Sorry, there was an error processing your request.")
