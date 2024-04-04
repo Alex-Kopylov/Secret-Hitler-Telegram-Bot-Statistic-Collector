@@ -27,7 +27,7 @@ class AppConfig(BaseSettings):
     # Game poll outcomes
     game_poll_outcomes: Tuple[str, ...] = (
         "👀 SPECTATOR | NOT A PLAYER 👀",
-        "I'm Canceler Hitler",
+        "I'm Chancellor Hitler",
         "I'm Dead Hitler",
         "I'm Hitler Loser",
         "I'm Hitler Winner",

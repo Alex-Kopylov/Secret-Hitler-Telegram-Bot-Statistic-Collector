@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS games (
     playroom_id INTEGER, -- Telegram chat id
     creator_id INTEGER NOT NULL, -- Telegram user id who created the game
     time DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    result TEXT, -- ["Hitler Canceler", "Fascist Law", "Hitler Death", "Liberal Law"]
+    result TEXT, -- ["Hitler Chancellor", "Fascist Law", "Hitler Death", "Liberal Law"]
     FOREIGN KEY (creator_id) REFERENCES players(id),
     FOREIGN KEY (playroom_id) REFERENCES playrooms(id)
 );
