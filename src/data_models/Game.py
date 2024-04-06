@@ -54,7 +54,7 @@ class Game(BaseModel):
             or total_liberals > max_liberals
             or total_fascists > max_fascists
         ):
-            raise ValueError("Invalid player distribution according to game rules.")
+            raise ValueError(f"Invalid player distribution: {total_hitlers} Hitlers, {total_liberals} Liberals, {total_fascists} Fascists. Max allowed - Hitlers: {max_hitlers}, Liberals: {max_liberals}, Fascists: {max_fascists}.")
 
     def check_mutually_exclusive_victory_conditions(
         cls, outcomes_counter: Counter
