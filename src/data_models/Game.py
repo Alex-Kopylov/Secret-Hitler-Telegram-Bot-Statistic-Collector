@@ -14,8 +14,7 @@ class Game(BaseModel):
     creator_id: int
 
     def extract_player_outcomes(cls, results: Tuple[PollResult, ...]) -> Counter:
-        outcomes = [outcome.get_answer_as_text() for outcome in results]
-        return Counter(outcomes)
+        return Counter(outcome.get_answer_as_text() for outcome in results)
 
     def remove_spectators(cls, outcomes_counter: Counter) -> None:
         outcomes_counter.pop("👀 SPECTATOR | NOT A PLAYER 👀", None)
