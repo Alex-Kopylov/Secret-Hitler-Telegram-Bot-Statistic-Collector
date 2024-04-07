@@ -86,12 +86,10 @@ async def save(
 ) -> None:
     msg_with_poll = update.effective_message.reply_to_message
     if await _pass_checks(msg_with_poll=msg_with_poll, update=update, context=context):
-        await context.bot.stop_poll(update.effective_chat.id, msg_with_poll.message_id)
         poll_id = int(msg_with_poll.poll.id)
         poll_data, poll_results = await asyncio.gather(
             fetch_poll_data(poll_id), fetch_poll_results(poll_id)
         )
-
         records = [
             Record(
                 creator_id=poll_data.creator_id,
@@ -102,14 +100,13 @@ async def save(
             )
             for results in poll_results
         ]
-
         game = Game(
             poll_id=poll_data.message_id,
             chat_id=poll_data.chat_id,
             creator_id=poll_data.creator_id,
             results=poll_results,
         )
-
+        await context.bot.stop_poll(update.effective_chat.id, msg_with_poll.message_id)
         # Execute post-game tasks
         await asyncio.gather(
             save_game(game),
