@@ -42,7 +42,7 @@ class Record(BaseModel):
                 )
 
     def get_team(self) -> Optional[Literal["Fascist", "Liberal"]]:
-        if self.role in {"CH", "DH", "FW", "FL", "HL"}:
+        if self.role in {"CH", "DH", "HL", "HW", "FW", "FL"}:
             return "Fascist"
         elif self.role in {"LW", "LL"}:
             return "Liberal"

@@ -13,13 +13,16 @@ class Game(BaseModel):
     ]  # Literal["Hitler Chancellor", "Fascist Law", "Hitler Death", "Liberal Law"]
     creator_id: int
 
-    def extract_player_outcomes(cls, results: Tuple[PollResult, ...]) -> Counter:
+    @staticmethod
+    def extract_player_outcomes(results: Tuple[PollResult, ...]) -> Counter:
         return Counter(outcome.get_answer_as_text() for outcome in results)
 
-    def remove_spectators(cls, outcomes_counter: Counter) -> None:
+    @staticmethod
+    def remove_spectators(outcomes_counter: Counter) -> None:
         outcomes_counter.pop("👀 SPECTATOR | NOT A PLAYER 👀", None)
 
-    def count_player_roles(cls, outcomes_counter: Counter) -> tuple[int, int, int]:
+    @staticmethod
+    def count_player_roles(outcomes_counter: Counter) -> tuple[int, int, int]:
         total_hitlers = sum(
             outcomes_counter[role]
             for role in [
@@ -40,8 +43,8 @@ class Game(BaseModel):
         )
         return total_hitlers, total_liberals, total_fascists
 
+    @staticmethod
     def validate_player_distribution(
-        cls,
         total_hitlers: int,
         total_liberals: int,
         total_fascists: int,
@@ -58,9 +61,8 @@ class Game(BaseModel):
                 f"Invalid player distribution: {total_hitlers} Hitlers, {total_liberals} Liberals, {total_fascists} Fascists. Max allowed - Hitlers: {max_hitlers}, Liberals: {max_liberals}, Fascists: {max_fascists}."
             )
 
-    def check_mutually_exclusive_victory_conditions(
-        cls, outcomes_counter: Counter
-    ) -> None:
+    @staticmethod
+    def check_mutually_exclusive_victory_conditions(outcomes_counter: Counter) -> None:
         liberal_win = (
             outcomes_counter["I'm Liberal Winner"] > 0
             or outcomes_counter["I'm Dead Hitler"] > 0
@@ -81,24 +83,35 @@ class Game(BaseModel):
     def validate_results(
         cls, results: tuple[PollResult]
     ) -> Literal["CH", "DH", "FW", "LW"]:
-        outcomes_counter = cls.extract_player_outcomes(results)
-        cls.remove_spectators(outcomes_counter)
+        outcomes_counter = cls.extract_player_outcomes(results=results)
+        cls.remove_spectators(outcomes_counter=outcomes_counter)
         total_hitlers, total_liberals, total_fascists = cls.count_player_roles(
-            outcomes_counter
+            outcomes_counter=outcomes_counter
         )
-        cls.validate_player_distribution(total_hitlers, total_liberals, total_fascists)
-        cls.check_mutually_exclusive_victory_conditions(outcomes_counter)
+        cls.validate_player_distribution(
+            total_hitlers=total_hitlers,
+            total_liberals=total_liberals,
+            total_fascists=total_fascists,
+        )
+        cls.check_mutually_exclusive_victory_conditions(
+            outcomes_counter=outcomes_counter
+        )
 
         # Determine outcome based on specific conditions
         if outcomes_counter["I'm Chancellor Hitler"] > 0:
             return "CH"
         if outcomes_counter["I'm Dead Hitler"] > 0:
             return "DH"
-        if outcomes_counter["I'm Liberal Winner"] > 0:
+        if (
+            outcomes_counter["I'm Liberal Winner"] > 0
+            or outcomes_counter["I'm Hitler Loser"] > 0
+            or outcomes_counter["I'm Fascistic Loser"] > 0
+        ):
             return "LW"
         if (
             outcomes_counter["I'm Fascistic Winner"] > 0
             or outcomes_counter["I'm Hitler Winner"] > 0
+            or outcomes_counter["I'm Liberal Loser"] > 0
         ):
             return "FW"
 
