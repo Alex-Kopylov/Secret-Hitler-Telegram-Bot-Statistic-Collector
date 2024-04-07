@@ -49,9 +49,8 @@ class AppConfig(BaseSettings):
             BotCommand("start", "Start using bot"),
             BotCommand("help", "Display help"),
             BotCommand("game", "Start the game in group chat"),
-            BotCommand(
-                "save", "Save the game by replying to poll created by /game command"
-            ),
+            BotCommand("save", "Save the game by replying to poll created by /game command"),
+            BotCommand("mystats", "Visualise your personal statistics"),
         ]
     )
 
