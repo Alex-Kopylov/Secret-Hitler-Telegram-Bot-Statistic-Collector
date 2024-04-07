@@ -41,7 +41,7 @@ class Record(BaseModel):
                     f"Invalid role '{v}' for Record. Role must be one of {config.GAME_POLL_OUTCOMES}"
                 )
 
-    def get_team(self) -> Optional[Literal["Fascist", "Liberal"]]:
+    def get_team(self) -> Optional[Literal["Fascist", "Liberal"]] | None:
         FASCIST_ROLES = {"CH", "DH", "HL", "HW", "FW", "FL"}
         LIBERAL_ROLES = {"LW", "LL"}
         if self.role in FASCIST_ROLES:
@@ -49,4 +49,4 @@ class Record(BaseModel):
         elif self.role in LIBERAL_ROLES:
             return "Liberal"
         else:
-            raise ValueError(f"Invalid role '{self.role}' for Record.")
+            return None

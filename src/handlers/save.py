@@ -1,6 +1,7 @@
 import asyncio
 
 from telegram import Update
+from telegram.constants import ParseMode
 from telegram.ext import ContextTypes
 
 from src.config import AppConfig
@@ -86,42 +87,44 @@ async def save(
 ) -> None:
     msg_with_poll = update.effective_message.reply_to_message
     if await _pass_checks(msg_with_poll=msg_with_poll, update=update, context=context):
-        poll_id = int(msg_with_poll.poll.id)
-        poll_data, poll_results = await asyncio.gather(
-            fetch_poll_data(poll_id), fetch_poll_results(poll_id)
-        )
-        records = [
-            Record(
-                creator_id=poll_data.creator_id,
-                player_id=results.user_id,
-                playroom_id=poll_data.chat_id,
-                game_id=poll_data.message_id,
-                role=results.get_answer_as_text(),
+        try:
+            poll_id = int(msg_with_poll.poll.id)
+            poll_data, poll_results = await asyncio.gather(
+                fetch_poll_data(poll_id), fetch_poll_results(poll_id)
             )
-            for results in poll_results
-        ]
-        game = Game(
-            poll_id=poll_data.message_id,
-            chat_id=poll_data.chat_id,
-            creator_id=poll_data.creator_id,
-            results=poll_results,
-        )
-        await context.bot.stop_poll(update.effective_chat.id, msg_with_poll.message_id)
-        # Execute post-game tasks
-        await asyncio.gather(
-            save_game(game),
-            *(save_record(record) for record in records),
-            try_to_delete_message(
-                context=context, chat_id=game.chat_id, message_id=game.poll_id
-            ),
-            try_to_delete_message(
-                context=context,
-                chat_id=game.chat_id,
-                message_id=update.effective_message.id,
-            ),
-            send_result(context=context, update=update, game=game, records=records),
-        )
-    else:
-        await update.effective_message.reply_text(
-            "Something went wrong. Can't process your request."
-        )
+            records = [
+                Record(
+                    creator_id=poll_data.creator_id,
+                    player_id=results.user_id,
+                    playroom_id=poll_data.chat_id,
+                    game_id=poll_data.message_id,
+                    role=results.get_answer_as_text(),
+                )
+                for results in poll_results
+            ]
+            game = Game(
+                poll_id=poll_data.message_id,
+                chat_id=poll_data.chat_id,
+                creator_id=poll_data.creator_id,
+                results=poll_results,
+            )
+            await context.bot.stop_poll(update.effective_chat.id, msg_with_poll.message_id)
+            # Execute post-game tasks
+            await asyncio.gather(
+                save_game(game),
+                *(save_record(record) for record in records),
+                try_to_delete_message(
+                    context=context, chat_id=game.chat_id, message_id=game.poll_id
+                ),
+                try_to_delete_message(
+                    context=context,
+                    chat_id=game.chat_id,
+                    message_id=update.effective_message.id,
+                ),
+                send_result(context=context, update=update, game=game, records=records),
+            )
+        except Exception as e:
+            await update.effective_message.reply_text(
+                f"Something went wrong. Can't process your request"
+            )
+            await update.effective_message.reply_text(f"{e}", parse_mode=ParseMode.HTML)
