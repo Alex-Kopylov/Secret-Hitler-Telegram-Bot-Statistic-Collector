@@ -5,6 +5,31 @@ services:
     volumes:
       - sqlite_data:/database
 
+  backup:
+    image: offen/docker-volume-backup
+
+    environment:
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_S3_BUCKET_NAME: ${AWS_S3_BUCKET_NAME}
+      BACKUP_CRON_EXPRESSION: "0 * * * *"
+      BACKUP_FILENAME: "backup-%d-%m-%YT%H-%M-%S.{{ .Extension }}"
+    restart: always
+
+    volumes:
+      - sqlite_data:/backup/db.sqlite:ro
+      # Mounting the Docker socket allows the script to stop and restart
+      # the container during backup and to access the container labels to
+      # specify custom commands. You can omit this if you don't want to
+      # stop the container or run custom commands. In case you need to
+      # proxy the socket, you can also provide a location by setting
+      # `DOCKER_HOST` in the container
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # If you mount a local directory or volume to `/archive` a local
+      # copy of the backup will be stored there. You can override the
+      # location inside of the container by setting `BACKUP_ARCHIVE`.
+      # You can omit this if you do not want to keep local backups.
+#      - /path/to/local_backups:/archive
 volumes:
   sqlite_data:
 
