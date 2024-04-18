@@ -41,6 +41,9 @@ jobs:
           DEVELOPER_CHAT_ID: ${{ secrets.DEVELOPER_CHAT_ID }}
           SQLITE_DB_FILE_PATH: ${{ secrets.SQLITE_DB_FILE_PATH }}
           TELEGRAM_BOT_TOKEN: ${{ env.TELEGRAM_BOT_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_S3_BUCKET_NAME: ${{ secrets.AWS_S3_BUCKET_NAME }}
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
@@ -49,7 +52,7 @@ jobs:
           script: |
             cd ./_work/${{ env.REPO_NAME }}/${{ env.REPO_NAME }}
             docker compose -p ${{ env.COMPOSE_PROJECT_NAME }}_${{ env.ENVIRONMENT }} ${{ env.COMPOSE_FILES }} up -d --force-recreate;
-          envs: TELEGRAM_BOT_TOKEN,DEVELOPER_CHAT_ID,SQLITE_DB_FILE_PATH
+          envs: TELEGRAM_BOT_TOKEN,DEVELOPER_CHAT_ID,SQLITE_DB_FILE_PATH,AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,AWS_S3_BUCKET_NAME
 
   deploy-check:
     needs: deploy
