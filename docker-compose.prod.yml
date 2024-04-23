@@ -13,7 +13,7 @@ services:
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
       AWS_S3_BUCKET_NAME: ${AWS_S3_BUCKET_NAME}
       BACKUP_CRON_EXPRESSION: "0 * * * *"
-      BACKUP_FILENAME: "backup-%d-%m-%YT%H-%M-%S.{{ .Extension }}"
+      BACKUP_FILENAME: "sh-db-backup.{{ .Extension }}"
     restart: always
 
     volumes:
