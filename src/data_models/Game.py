@@ -115,4 +115,5 @@ class Game(BaseModel):
         ):
             return "FW"
 
-        raise ValueError("Invalid game results: No clear win condition met.")
+        raise ValueError(f"Invalid game results: No clear win condition met. \n"
+                         f"Here is outcomes that were recorded: {outcomes_counter}\n")
